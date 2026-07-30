@@ -2,7 +2,7 @@ import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, resolve, sep } from "node:path";
 
-const root = resolve(process.cwd(), "dist");
+const root = resolve(process.cwd(), "dist", "assets");
 const portArgument = process.argv.findIndex((argument) => argument === "-p" || argument === "--port");
 const port = Number(portArgument >= 0 ? process.argv[portArgument + 1] : process.env.PORT ?? 3000);
 const mimeTypes = {

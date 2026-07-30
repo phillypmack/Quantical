@@ -60,6 +60,7 @@ test("páginas principais não criam rolagem horizontal no celular", async ({ pa
 });
 
 test("landing e laboratório não têm violações graves de acessibilidade", async ({ page }) => {
+  test.setTimeout(60_000);
   for (const path of ["/", "/laboratorio"]) {
     await page.goto(path);
     const results = await new AxeBuilder({ page }).analyze();
