@@ -345,6 +345,69 @@ Se for fazer o do warzil, o mais seguro é **não gravar na VPS**:
 ssh root@187.77.8.195 "docker exec warzil-postgres pg_dump -U warzil -d warzil -Fc -Z9 --no-owner" > warzil.dump
 ```
 
+## 4. Dois projetos abandonados — REMOVIDOS
+
+`mobi.rohnelt.dev` respondia 502 no próprio app e `tablegames.rohnelt.dev` não
+resolvia em DNS. O dono confirmou que eram lixo dele.
+
+```bash
+./deploy/vps/07-remove-lixo.sh   # aplicado em 31/07/2026
+```
+
+Saíram: 3 processos PM2, 1 container, 1 volume, 2 vhosts nginx, 1 certificado
+Let's Encrypt, 4 regras de ufw (3020 e 3021, v4 e v6) e 2 diretórios.
+
+O que **não** podia ser tocado, e não foi:
+
+- **`/root/.pm2/dump.pm2` é compartilhado.** Ele trazia os cinco processos,
+  incluindo `chess2-server` e `chess2-web`, que sustentam o xadrez.pro. Apagar
+  o arquivo mataria a ressurreição do chess2 no boot. O caminho certo é
+  `pm2 delete` dos três e depois `pm2 save`, que reescreve o dump com os dois
+  que ficam — foi o que aconteceu.
+- **A imagem `postgres:16-alpine`** é usada por 5 containers.
+- **A rede `bridge`** hospedava `tablegames-postgres` e `chess2-postgres`
+  juntos; só o container saiu.
+- **`options-ssl-nginx.conf` e `ssl-dhparams.pem`** são includes globais do
+  certbot, usados por 10 vhosts.
+- O certificado do mobi cobria **um domínio só** (verificado antes de apagar).
+  O de `rohnelt.dev` cobre dois e ficou.
+- Regras de ufw removidas **por especificação**, nunca por número: os números
+  se deslocam a cada remoção.
+
+Backup em `/root/removidos-20260731-183043/` (59 MB): código dos dois
+projetos, dump do banco validado com `pg_restore -l`, os vhosts, o `dump.pm2`
+anterior e o `docker inspect` do container feito à mão. Nenhum dos dois tinha
+repositório git — `/opt/tablegames` era a única cópia daquele código.
+
+Verificado depois: os sete sites restantes respondem 200, o xadrez.pro segue
+no ar (308 → `/en` → 200), 16 containers e os 12 invariantes OK.
+
+## 5. O disco tem 30+ GB recuperáveis
+
+Apagar `/opt/tablegames` (823 MB) liberou só 267 MB. O motivo é que o pnpm
+liga `node_modules` ao store por **hardlink** — remover o projeto não libera os
+blocos, que continuam referenciados no store.
+
+Puxando esse fio apareceu o quadro real de um disco a 77% num filesystem
+único, sem swap:
+
+| | tamanho |
+|---|---|
+| `/root/.npm` (cache do npm) | **16 GB** |
+| Build cache do Docker | **15,7 GB recuperáveis** de 18,5 GB |
+| Imagens Docker | 5,7 GB, marcadas 100% recuperáveis |
+| `/root/.local` (store do pnpm) | 843 MB |
+
+Cache do npm é cache: `npm cache clean --force` é seguro, só custa o próximo
+download. `docker builder prune` idem. Juntos passam de 30 GB — mais do que os
+23 GB livres de hoje.
+
+Isso importa além da arrumação: **o warzil tem 17 GB de banco e nenhum
+backup**, e a razão de não ter sido feito é justamente não haver espaço com
+folga. Recuperar esse cache resolve as duas coisas.
+
+Não executei porque não fazia parte do que foi pedido.
+
 ## Armadilhas do servidor, encontradas na apuração
 
 - **`chess2-postgres` e `tablegames-postgres` foram criados à mão**, sem
