@@ -71,55 +71,267 @@ gunzip -c /var/backups/quantical/quantical-AAAAMMDD-HHMMSS.sql.gz \
 O dump é `--clean --if-exists`, então restaura sobre um banco já existente,
 que é o cenário real de uma restauração às pressas.
 
-## ⚠️ Problema aberto no servidor: dois Dockers brigando
+---
 
-**Containers não podem ser parados nem reiniciados nesta VPS.** Isso afeta
-todos os projetos do servidor, não só o Quantical.
+# Problemas do servidor e como corrigi-los
+
+Os scripts vivem em [`deploy/vps/`](../deploy/vps/) e são **numerados na ordem
+em que devem rodar**. Todos são idempotentes e trazem o rollback impresso ao
+final.
+
+## 1. `docker stop` não funciona em container nenhum — CAUSA RAIZ ENCONTRADA
+
+**Estado: diagnosticado, corrigido e validado; falta aplicar.**
+
+O sintoma: `docker stop <qualquer container>` responde `permission denied`,
+em qualquer projeto do servidor. Foram 181 negações nos últimos 7 dias.
 
 ```
-$ docker stop quantical-api
-Error response from daemon: cannot stop container: permission denied
-```
-
-A causa está no `dmesg`:
-
-```
-apparmor="DENIED" operation="signal" profile="docker-default"
+apparmor="DENIED" operation="signal" class="signal" profile="docker-default"
   requested_mask="receive" denied_mask="receive" signal=kill
   peer="snap.docker.dockerd"
 ```
 
-E a razão de fundo é que o Docker está instalado **duas vezes**, com os dois
-daemons rodando ao mesmo tempo:
+**A causa não é "AppArmor mal configurado".** É mais específica:
 
-- `docker.service` — apt, `docker-ce 29.2.1`, pid 996, socket `/run/docker.sock`
-- `snap.docker.dockerd.service` — snap, `29.3.1`, pid 817, socket `/var/run/docker.sock`
+O perfil `docker-default` **não tem arquivo em lugar nenhum do disco**
+(`ls /etc/apparmor.d/docker*` → *No such file*). O próprio dockerd o gera em
+memória, a partir de um template Go embutido no binário, grava num arquivo
+temporário e carrega com `apparmor_parser`. Por isso não havia nada para
+editar.
 
-O daemon do snap ficou com o socket, e o perfil AppArmor `docker-default`
-(do pacote apt) não autoriza o peer `snap.docker.dockerd` a sinalizar os
-containers. Resultado: criar funciona, parar não.
+E há **dois dockerds** nesta máquina:
 
-**Consequência prática:** a API está no ar e funcionando, mas **uma alteração
-em `deploy/api/server.mjs` não pode ser publicada** — o `docker compose up`
-precisaria parar o container antigo para trocá-lo.
+| | docker.service (.deb) | snap.docker.dockerd |
+|---|---|---|
+| Versão | 29.2.1 | **29.3.1** |
+| PID | 996 | **817** |
+| Confinamento | `unconfined` | `snap.docker.dockerd (enforce)` |
+| Containers | 1, parado desde fevereiro | **os 17 de produção** |
+| Data root | `/var/lib/docker` — **244 KB** | `/var/snap/docker/common/var-lib-docker` — **43 GB** |
 
-A correção é remover um dos dois Dockers, e isso **para todos os containers do
-servidor** — chaveirogo, chess2, container-loader, dona-lia, tablegames,
-warzil. Não é uma decisão para tomar sozinho, então ficou aqui em vez de ser
-executada. O caminho seria, numa janela combinada:
+No boot de 20/07 o dockerd do `.deb` carregou o perfil às **06:57:07**, antes
+de o do snap chegar nessa etapa (o containerd dele só apareceu às 06:57:17).
+Como o dockerd faz *early-return* quando o perfil já está carregado, o do snap
+nunca o corrigiu.
 
-```bash
-snap remove docker            # mantém o docker-ce do apt, que é o padrão dos outros projetos
-systemctl restart docker
-docker compose -f /var/www/<cada projeto>/docker-compose.yml up -d
+Só que o template é parametrizado pelo confinamento de **quem renderiza**:
+
+```
+  # dockerd may send signals to container processes (for "docker kill").
+  signal (receive) peer={{.DaemonProfile}},
+{{if .SnapSecurityLabel}}
+  signal (receive) peer="{{.SnapSecurityLabel}}",
+{{end}}
 ```
 
-Conferir antes quais volumes pertencem a qual daemon — o snap guarda os dados
-em `/var/snap/docker/common/var-lib-docker`, e o apt em `/var/lib/docker`.
+Renderizado pelo daemon do `.deb`, que roda unconfined, `{{.DaemonProfile}}`
+virou `unconfined` e o bloco do snap **não foi emitido**. O perfil em kernel
+simplesmente não autoriza receber sinal de `snap.docker.dockerd` — que é
+justamente quem manda os sinais.
 
-## Outra coisa que vi
+### A correção
 
-`donalia-postgres` está publicado em `0.0.0.0:5433`, ou seja, **aceita conexão
-da internet inteira**. Todos os outros bancos do servidor estão presos a
-`127.0.0.1`. Não é projeto meu, mas vale trocar para
-`127.0.0.1:5433:5432` no compose do dona-lia.
+Materializar o perfil em `/etc/apparmor.d/docker-default`, renderizado do
+template do binário **do snap**, com os valores certos.
+
+```bash
+./deploy/vps/03a-valida-apparmor.sh    # renderiza e prova — não altera nada
+./deploy/vps/03b-aplica-apparmor.sh /root/aa-<carimbo>
+```
+
+**Zero downtime:** `apparmor_parser -r` substitui o perfil atomicamente e as
+tarefas já confinadas migram para a nova versão sem reiniciar. Nenhum
+container para.
+
+**Persiste:** o `apparmor.service` carrega `/etc/apparmor.d` ~34 s antes de
+qualquer dockerd, então nos próximos boots os **dois** daemons caem no
+early-return e o perfil bom prevalece.
+
+**A prova de que é seguro.** Substituir um perfil vale imediatamente para os
+115 processos confinados dos 8 projetos — um perfil incompleto quebraria tudo
+de uma vez. Por isso o renderizador não se limita a renderizar; ele trava em
+quatro pontos, e já rodou com sucesso no servidor:
+
+```
+trava 1 OK: 19 regras não-peer idênticas nas duas versões
+trava 2 OK: superconjunto estrito, 4 regra(s) a mais
+  nova: ptrace (readby, tracedby) peer="snap.docker.dockerd",
+  nova: signal (receive) peer="snap.docker.dockerd",
+  nova: signal (receive) peer=snap.docker.dockerd,
+  nova: signal (send, receive) peer=docker-default,
+trava 3 OK: signal (receive) peer="snap.docker.dockerd",
+trava 4 OK: sem abi, 15 regras deny preservadas
+parse OK
+```
+
+O diff contra o perfil em vigor é de **uma linha trocada** — e ela era
+duplicata de outra logo acima, então nada se perde:
+
+```diff
+-  signal (receive) peer=unconfined,
++  signal (receive) peer=snap.docker.dockerd,
+```
+
+mais o bloco de 6 linhas do snap. **Nenhuma regra `deny` sai, nenhuma
+permissão é retirada.** Sendo superconjunto estrito, o perfil novo não tem
+como negar nada que hoje funciona.
+
+Rollback, sem reiniciar nada:
+
+```bash
+ssh root@187.77.8.195 'install -m 0644 /root/aa-<carimbo>/docker-default.rollback \
+  /etc/apparmor.d/docker-default && apparmor_parser -r /etc/apparmor.d/docker-default'
+```
+
+E o alívio imediato, se algo inesperado aparecer:
+`apparmor_parser -r -C /etc/apparmor.d/docker-default` recarrega em *complain*
+— para de negar na hora, sem descarregar nada. É paliativo de minutos, não
+estado estável: um reboot ou um `systemctl reload apparmor` volta a *enforce*.
+
+### 1b. Depois: acabar com a corrida de boot
+
+```bash
+./deploy/vps/04-mask-docker-deb.sh
+```
+
+`systemctl mask docker.service docker.socket` impede o daemon do `.deb` de
+subir nos próximos boots e **não para o processo que roda agora** — risco zero
+no instante da aplicação.
+
+> **NÃO remova o snap.** Uma versão anterior deste documento sugeria
+> `snap remove docker` "para manter o docker-ce do apt". Isso teria sido
+> catastrófico: os 43 GB de volumes e os 17 containers de produção estão no
+> data root do **snap**. O data root do `.deb` tem 244 KB.
+
+Parar o `docker.service` agora também não vale o risco: `/var/run` é symlink
+para `/run`, os dois daemons disputaram o **mesmo** caminho de socket, e o
+socket que existe hoje é o do snap. Parar a `docker.socket` do systemd pode
+remover esse arquivo e deixar o CLI sem alcançar o daemon do snap — os
+containers seguiriam rodando, mas ninguém conseguiria administrá-los.
+
+### Manutenção futura do perfil
+
+O arquivo `/etc/apparmor.d/docker-default` congela o perfil na versão 29.3.1.
+**Depois de todo refresh do snap docker**, rode `03a-valida-apparmor.sh` de
+novo: a trava 1 compara os templates das duas versões e acusa se as regras
+mudaram.
+
+O auto-refresh do snap está **segurado até 2026-08-03**
+(`snap refresh --hold=72h docker`) — sem isso ele reiniciaria o daemon e
+derrubaria os 17 containers no meio da intervenção. Ao liberar, prefira fixar
+uma janela em vez de deixar solto:
+
+```bash
+snap set system refresh.timer=sun,03:00-05:00
+```
+
+> Cuidado: `snap refresh --hold` **sem argumentos** não é consulta — ele
+> aplica um hold indefinido em *todos* os snaps. Para consultar, leia
+> `snaps-hold` em `/var/lib/snapd/state.json`.
+
+## 2. Postgres da dona-lia exposto à internet — CORRIGIDO
+
+**Estado: fechado e verificado de fora.**
+
+`donalia-postgres` publicava `0.0.0.0:5433`. Teste de conexão a partir de uma
+máquina externa confirmou que **respondia**. E o banco aceita qualquer origem
+com senha:
+
+```
+pg_hba.conf:      host all all all scram-sha-256
+postgresql.conf:  listen_addresses = '*'
+```
+
+O log do container mostra varredura recorrente desde 19/06 — pacotes de
+startup malformados e protocolo inválido, assinatura de `masscan`/`zgrab`.
+
+O `ufw` não protegia: ele só filtra o `INPUT`, e porta publicada por container
+é DNAT'ada em `nat/PREROUTING` e segue pelo `FORWARD`. É o bypass clássico do
+Docker sobre o ufw.
+
+```bash
+./deploy/vps/01-fecha-portas.sh
+```
+
+Fecha pela cadeia `DOCKER-USER`, que é o ponto de extensão oficial, **sem
+tocar em container nenhum** — o que importava, já que recriar container estava
+bloqueado pelo problema 1. Verificado de fora: `5433 fechada`, e a `3002`
+segue aberta de propósito.
+
+O script corrigiu três defeitos do mecanismo que já existia:
+
+1. O serviço tinha `Requires=docker.service` — o daemon do `.deb`, que **não**
+   é quem serve os containers. Como ele vai ser mascarado, esse `Requires`
+   faria o serviço falhar no boot e as portas reabririam em silêncio. Agora
+   aponta para `snap.docker.dockerd.service`.
+2. O Docker **limpa a cadeia `DOCKER-USER`** toda vez que o daemon sobe. Sendo
+   `oneshot` + `RemainAfterExit`, o serviço nunca re-executava: um restart do
+   daemon reabria 3001 e 8090 para a internet sem nenhum aviso. `PartOf=`
+   corrige.
+3. A cadeia `DOCKER-USER` do `ip6tables` estava vazia.
+
+Depois que o problema 1 estiver aplicado, vale a defesa em profundidade:
+
+```bash
+./deploy/vps/05-donalia-loopback.sh   # muda o compose para 127.0.0.1:5433
+```
+
+### Ainda em aberto na dona-lia (não é projeto meu, mas é sério)
+
+- **A senha do superusuário `donalia` segue o padrão trivial `<usuário>123`.**
+  Mesmo com a porta fechada, vale trocar: `ALTER USER` + `POSTGRES_PASSWORD`
+  no compose + `DATABASE_URL` do app.
+- **`donalia-app` está crua em `0.0.0.0:3002`** — sem nginx, sem TLS, sem
+  domínio. Todo o tráfego, login incluso, vai em HTTP puro. E o
+  `NEXTAUTH_SECRET` tem fallback default no compose
+  (`${NEXTAUTH_SECRET:-dona-lia-secret-change-me}`). Fechar a porta hoje
+  derruba o acesso: o caminho é criar um vhost com TLS primeiro.
+
+## 3. Sete dos oito projetos não têm backup de banco
+
+Só o quantical tem (e o cron dele ainda não rodou). O chess2 tem um dump
+órfão de 28/07, sem script que o regenere. **warzil, tablegames, donalia,
+container-loader, chaveirogo e baseline-tennis não têm nenhuma cópia.**
+
+```bash
+./deploy/vps/02-backup-bancos.sh                 # os seis pequenos (~65 MB)
+./deploy/vps/02-backup-bancos.sh usuario@host --com-warzil
+```
+
+O warzil fica de fora por padrão, e por um bom motivo: ele tem **17 GB** —
+99,6% de todos os dados do servidor; os outros seis somados dão ~65 MB. O
+disco é um filesystem único com **23 GB livres, sem swap** e ~250 MB de RAM
+livre. Escrever um dump de vários GB ali, com 7 Postgres ativos no mesmo
+disco, é a operação mais perigosa deste servidor. O script aborta sozinho se o
+espaço livre cair abaixo de 8 GB.
+
+Se for fazer o do warzil, o mais seguro é **não gravar na VPS**:
+
+```bash
+ssh root@187.77.8.195 "docker exec warzil-postgres pg_dump -U warzil -d warzil -Fc -Z9 --no-owner" > warzil.dump
+```
+
+## Armadilhas do servidor, encontradas na apuração
+
+- **`chess2-postgres` e `tablegames-postgres` foram criados à mão**, sem
+  compose e sem labels. São irreproduzíveis a partir do disco: se forem
+  removidos, ninguém sabe recriá-los. **Não rode `docker rm` neles.** Os dados
+  estão em volumes nomeados (`chess2-pgdata`, `tablegames-pgdata`), então
+  sobrevivem — mas o container, não.
+- **`/var/www/rohnelt/docker-compose.yml` é um compose fantasma** que duplica
+  `rohnelt-portfolio` e ainda declara um container nginx tomando as portas 80 e
+  443 do host. Um `docker compose up` nesse diretório **derrubaria todos os
+  sites da VPS**. O compose real, em uso, é `/root/rohnelt`.
+- **O compose do warzil não declara `restart:`.** Os containers em execução
+  estão `unless-stopped`, mas um `docker compose up -d` em `/opt/warzil` os
+  recriaria com `restart=no`, e no próximo restart do daemon o warzil não
+  voltaria sozinho.
+- **Composes dormentes colidem com portas vivas:** `container-loader-dev`
+  reserva `127.0.0.1:5432` e `127.0.0.1:3000`, as mesmas do container-loader
+  em produção.
+- Todos os 20 containers têm `restart=unless-stopped`. Numa parada do daemon
+  do snap, todos voltam sozinhos — inclusive os dois criados à mão.
+- `3020` e `3021` (tablegames, processos PM2 no host, não containers) estão
+  abertos ao mundo por regra explícita do `ufw`. Convém confirmar se é
+  intencional.

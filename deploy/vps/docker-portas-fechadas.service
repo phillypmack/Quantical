@@ -1,0 +1,24 @@
+[Unit]
+Description=Fecha acesso direto da internet a portas de container
+Documentation=file:///usr/local/sbin/docker-portas-fechadas.sh
+
+# Quem serve os containers desta maquina e o dockerd do SNAP, nao o do pacote
+# .deb. A versao anterior tinha Requires=docker.service (o do .deb) — como esse
+# servico vai ser mascarado, o Requires faria ESTE aqui falhar no boot e as
+# portas reabririam em silencio.
+After=snap.docker.dockerd.service ufw.service
+Wants=snap.docker.dockerd.service
+
+# O Docker LIMPA a cadeia DOCKER-USER toda vez que o daemon sobe. Sendo oneshot
+# com RemainAfterExit, sem PartOf este servico nunca re-executava: um restart do
+# daemon reabria 3001 e 8090 para a internet sem nenhum aviso. PartOf faz o
+# systemd reiniciar este servico junto com o daemon.
+PartOf=snap.docker.dockerd.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/docker-portas-fechadas.sh
+
+[Install]
+WantedBy=multi-user.target
