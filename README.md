@@ -22,7 +22,26 @@ onde o conceito mora.
 **Correção automática.** Os desafios e o estágio final de cada módulo rodam o
 circuito do aluno e conferem o **estado produzido**, não as portas usadas —
 inclusive aceitando soluções que diferem apenas por fase global, que são
-fisicamente idênticas.
+fisicamente idênticas. A esfera de Bloch desenha o estado alvo como seta
+tracejada e mostra a distância encolher: "chegue aqui" em vez de
+aprovado/reprovado. O alvo sai da própria solução de referência, que o CI já
+confere.
+
+**Revisão espaçada, por conceito.** Errar uma pergunta sobre fase não devolve
+a aula inteira para a fila: devolve o conceito, que pode voltar por qualquer
+item que o exercite. A sessão em `/revisar` remonta a coisa exata em que o
+aluno tropeçou — a pergunta com as alternativas reembaralhadas, o passo do
+experimento para reapostar no mesmo circuito, o exercício cuja asserção
+falhou. Nenhum material novo precisou ser escrito: é o material da aula.
+
+**Perfil de equívocos.** Cada módulo foi construído em torno de uma intuição
+específica que quebra, e o experimento que a derruba já existe. Nomeando essas
+intuições em [`src/data/equivocos.ts`](src/data/equivocos.ts) e marcando as
+alternativas erradas que as revelam, o painel passa a dizer *"você tende a
+tratar o histograma como se fosse o estado; apareceu 3 vezes"* — e a oferecer
+o experimento que derruba. Uma trava em `content.test.ts` garante que todo
+equívoco citado existe, que toda demolição aponta para uma aula e um passo
+reais, e que nenhum equívoco está marcado numa alternativa **certa**.
 
 ## Desenvolvimento
 
@@ -71,8 +90,22 @@ trocar qualquer coisa, troca o conteúdo de forma atômica, recarrega o nginx e
 então confere que todas as rotas exportadas respondem 200. A versão anterior
 fica em `/var/www/quantical.old-<timestamp>` (os três últimos são mantidos).
 
+Banco e API (opcionais para o site funcionar, ver
+[`docs/OPERACAO.md`](docs/OPERACAO.md)):
+
+```bash
+./scripts/deploy-api.sh root@187.77.8.195
+```
+
+Postgres e uma API em Node puro, em Docker, presos a `127.0.0.1` e servidos
+por `proxy_pass` em `/api/`. Mesma origem de propósito: sem CORS e sem origem
+nova a autorizar no CSP. **O site continua `output: "export"`** — a API é
+durabilidade e agregação, nunca caminho crítico, e há um teste e2e que aborta
+toda chamada a `/api/**` e percorre o site inteiro para provar isso.
+
 Infraestrutura em [`deploy/`](deploy/):
 
+- `api/` — compose, Dockerfile, esquema e servidor da API
 - `nginx.quantical.conf` — referência da configuração de produção
 - `quantical-headers.conf` — cabeçalhos de segurança, com CSP **sem
   `unsafe-eval`** (possível porque o avaliador de ângulos do parser é próprio,
