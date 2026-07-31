@@ -155,6 +155,26 @@
 .bloch-tip { fill: var(--violet); }
 /* Emaranhado vira nuvem: a seta de tamanho zero não explicava nada. */
 .bloch-mixed { fill: rgba(8, 125, 157, 0.18); stroke: var(--cyan); stroke-width: 1.2; stroke-dasharray: 3 3; }
+
+/* Alvo do exercício: mesma ideia da barra-fantasma do histograma, que já
+   funciona. Tracejado e mais claro para nunca competir com o vetor real. */
+.bloch-alvo line {
+  stroke: var(--green);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+  stroke-linecap: round;
+  opacity: 0.75;
+}
+
+.bloch-alvo circle { fill: none; stroke: var(--green); stroke-width: 2; opacity: 0.75; }
+
+.bloch-distancia {
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.bloch-distancia.is-chegou { color: var(--green); font-weight: 500; }
 .bloch-figure figcaption { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
 .bloch-note { font-size: 0.76rem; color: var(--ink-soft); }
 .bloch-note--entangled { color: var(--cyan); font-weight: 600; }

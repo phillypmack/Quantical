@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import { cn } from "@/lib/cn";
 import { useHydrated } from "@/lib/use-hydrated";
-import type { ComplexValue, SimulationResult } from "@/lib/quantum/types";
+import type { BlochVector, ComplexValue, SimulationResult } from "@/lib/quantum/types";
 import { BlochSphere } from "./bloch-sphere";
 import { Histogram } from "./histogram";
 import { StepScrubber } from "./step-scrubber";
@@ -28,6 +28,8 @@ type ResultPanelProps = {
   prediction?: Prediction;
   hideValues?: boolean;
   showSteps?: boolean;
+  /** Vetores de Bloch do estado alvo, um por qubit. Vira seta-fantasma. */
+  alvoBloch?: BlochVector[];
 };
 
 export function ResultPanel({
@@ -36,6 +38,7 @@ export function ResultPanel({
   prediction,
   hideValues = false,
   showSteps = true,
+  alvoBloch,
 }: ResultPanelProps) {
   const [panel, setPanel] = useState<"probabilidades" | "estado" | "bloch">("probabilidades");
   const [mode, setMode] = useState<"teorico" | "shots">("teorico");
@@ -167,7 +170,12 @@ export function ResultPanel({
         {panel === "bloch" && (
           <div className="bloch-grid">
             {view.blochVectors.map((vector, qubit) => (
-              <BlochSphere key={qubit} qubit={qubit} vector={vector} />
+              <BlochSphere
+                alvo={alvoBloch?.[qubit]}
+                key={qubit}
+                qubit={qubit}
+                vector={vector}
+              />
             ))}
           </div>
         )}

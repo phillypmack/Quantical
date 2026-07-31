@@ -5,6 +5,8 @@ import { Check, Eye, Lightbulb, Play, RotateCcw, X } from "lucide-react";
 
 import { cn } from "@/lib/cn";
 import { validateExercise, type Exercise, type ValidationResult } from "@/lib/quantum/validator";
+import { parseQiskit } from "@/lib/quantum/parser";
+import { simulateCircuit } from "@/lib/quantum/simulator";
 import { useProgress } from "@/components/progress-provider";
 import { ResultPanel } from "./result-panel";
 
@@ -63,6 +65,25 @@ export function ExerciseWorkbench({
 
   // "Ver solução" libera após três tentativas — ou a pedido, sem julgamento.
   const canReveal = attempts >= 3 || hintsShown >= exercise.hints.length;
+
+  /**
+   * O estado alvo, tirado da própria solução de referência.
+   *
+   * Sai de graça: a solução já existe em todo exercício e o CI já confere que
+   * ela passa nas asserções. Mostrar o destino na esfera não entrega o
+   * caminho — nenhuma porta é revelada —, mas transforma "prepare |−⟩" de
+   * enunciado em prosa num lugar visível para onde ir.
+   */
+  const alvoBloch = useMemo(() => {
+    try {
+      return simulateCircuit({ ...parseQiskit(exercise.solutionCode), seed: 1, captureSteps: false })
+        .blochVectors;
+    } catch {
+      // Uma solução que não parseia é bug de conteúdo, pego pelo teste de
+      // conteúdo. Aqui só significa exercício sem alvo desenhado.
+      return undefined;
+    }
+  }, [exercise.solutionCode]);
 
   const lineCount = useMemo(() => code.split("\n").length, [code]);
 
@@ -182,7 +203,11 @@ export function ExerciseWorkbench({
       )}
 
       {result?.result && result.circuit && (
-        <ResultPanel qubits={result.circuit.qubits} result={result.result} />
+        <ResultPanel
+          alvoBloch={alvoBloch}
+          qubits={result.circuit.qubits}
+          result={result.result}
+        />
       )}
 
       {solved && <p className="workbench-solved">Desafio concluído.</p>}

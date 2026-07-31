@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { challenges } from "@/data/challenges";
+import { distanciaDeBloch } from "@/components/quantum/bloch-sphere";
 import { parseQiskit } from "./parser";
 import { circuitToQiskit } from "./qiskit";
 import { simulateCircuit } from "./simulator";
@@ -103,5 +105,39 @@ describe("Qiskit", () => {
     ]);
     const parsed = parseQiskit(circuitToQiskit(source));
     expect(parsed.operations.slice(0, 2).map((operation) => operation.gate)).toEqual(["H", "CNOT"]);
+  });
+});
+
+describe("distância até o estado alvo", () => {
+  it("é zero quando o estado já é o alvo", () => {
+    const alvo = { x: 1, y: 0, z: 0, length: 1 };
+    expect(distanciaDeBloch(alvo, alvo)).toBe(0);
+  });
+
+  it("é máxima entre polos opostos", () => {
+    // |0⟩ e |1⟩ são antípodas: a distância é o diâmetro.
+    expect(
+      distanciaDeBloch({ x: 0, y: 0, z: 1, length: 1 }, { x: 0, y: 0, z: -1, length: 1 }),
+    ).toBe(2);
+  });
+
+  it("encolhe conforme o estado se aproxima do alvo", () => {
+    const alvo = { x: 1, y: 0, z: 0, length: 1 };
+    const longe = distanciaDeBloch({ x: 0, y: 0, z: 1, length: 1 }, alvo);
+    const perto = distanciaDeBloch({ x: 0.9, y: 0, z: 0.44, length: 1 }, alvo);
+    expect(perto).toBeLessThan(longe);
+  });
+
+  it("o alvo de cada exercício sai da própria solução de referência", () => {
+    // Se isto quebrar, algum exercício ganhou uma solução que não parseia — e
+    // aí a esfera deixaria de mostrar para onde ir, em silêncio.
+    for (const challenge of challenges) {
+      const circuito = parseQiskit(challenge.exercise.solutionCode);
+      const alvo = simulateCircuit({ ...circuito, seed: 1, captureSteps: false }).blochVectors;
+      expect(alvo, challenge.id).toHaveLength(circuito.qubits);
+      for (const vetor of alvo) {
+        expect(Number.isFinite(vetor.x) && Number.isFinite(vetor.z), challenge.id).toBe(true);
+      }
+    }
   });
 });

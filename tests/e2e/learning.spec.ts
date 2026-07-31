@@ -571,3 +571,30 @@ test("quando a API responde, as tentativas sobem e ficam marcadas", async ({ pag
   expect(lote.tentativas).toHaveLength(3);
   expect(lote.alunoId).toMatch(/^[0-9a-f-]{36}$/);
 });
+
+test("o exercício mostra para onde ir, e a distância encolhe até zero", async ({ page }) => {
+  await page.goto("/desafios/inversor");
+  const editor = page.getByLabel("Seu código Qiskit");
+
+  // Circuito errado de propósito: o estado fica longe do alvo.
+  await editor.fill("from qiskit import QuantumCircuit\n\nqc = QuantumCircuit(1)\nqc.h(0)\n");
+  await page.getByRole("button", { name: "Verificar" }).click();
+  await page.getByRole("tab", { name: "Bloch" }).click();
+
+  const distancia = page.locator(".bloch-distancia").first();
+  await expect(distancia).toContainText(/Falta \d/);
+  // A seta-fantasma tem que estar desenhada enquanto não se chegou.
+  await expect(page.locator(".bloch-alvo")).toHaveCount(1);
+
+  const antes = Number((await distancia.textContent())?.match(/[\d.]+/)?.[0]);
+  expect(antes).toBeGreaterThan(0);
+
+  // Agora o circuito certo.
+  await editor.fill("from qiskit import QuantumCircuit\n\nqc = QuantumCircuit(1)\nqc.x(0)\n");
+  await page.getByRole("button", { name: "Verificar" }).click();
+  await page.getByRole("tab", { name: "Bloch" }).click();
+
+  await expect(distancia).toContainText("No alvo");
+  // Chegou: o fantasma sai de cena em vez de ficar sobreposto à seta real.
+  await expect(page.locator(".bloch-alvo")).toHaveCount(0);
+});
