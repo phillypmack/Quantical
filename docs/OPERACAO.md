@@ -75,7 +75,11 @@ que é o cenário real de uma restauração às pressas.
 
 # Problemas do servidor
 
-Todos corrigidos em 31/07/2026. Os scripts vivem em
+Todos corrigidos em 31/07/2026. Para a próxima investigação — em especial o
+banco do warzil, com 17 GB que não deveria ter — existe um prompt pronto e
+autossuficiente em [`PROMPT-SERVIDOR.md`](PROMPT-SERVIDOR.md): ele carrega as
+armadilhas desta página para que uma sessão nova não redescubra do zero nem
+destrua algo que parece órfão e não é. Os scripts vivem em
 [`deploy/vps/`](../deploy/vps/), **numerados na ordem em que rodaram**. São
 idempotentes e imprimem o rollback ao final.
 
