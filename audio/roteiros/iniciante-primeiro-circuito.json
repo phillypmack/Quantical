@@ -1,0 +1,147 @@
+{
+  "id": "iniciante/primeiro-circuito",
+  "titulo": "Seu primeiro algoritmo",
+  "resumo": "Monte e execute um circuito que transforma uma diferença de fase invisível em uma resposta observável.",
+  "falas": [
+    {
+      "voz": "nina",
+      "texto": "Boas-vindas! Hoje a gente vai montar e executar seu primeiro algoritmo quântico completo. Ele vai usar um circuito para transformar uma diferença invisível numa resposta que a medição consegue revelar."
+    },
+    {
+      "voz": "teo",
+      "texto": "Algoritmo completo já parece coisa grande. A gente vai fatorar números ou quebrar alguma senha?"
+    },
+    {
+      "voz": "nina",
+      "texto": "Ainda não, e esse não é o objetivo deste passo. Nosso problema será identificar qual de duas operações existe dentro de uma caixa fechada: uma não altera o qubit, e a outra inverte a fase associada a ket um."
+    },
+    {
+      "voz": "teo",
+      "texto": "Se a caixa está fechada, eu abro e olho qual operação colocaram lá. Problema resolvido sem computador quântico."
+    },
+    {
+      "voz": "nina",
+      "texto": "Aqui a regra é que a gente não pode abrir a caixa. Só pode passar um qubit por ela e observar o que acontece depois. Esse tipo de operação escondida é chamado de oráculo."
+    },
+    {
+      "voz": "teo",
+      "texto": "Então eu mando ket zero pela caixa e faço uma medição. Se sair zero, descubro qual operação estava lá."
+    },
+    {
+      "voz": "nina",
+      "texto": "Não descobre. A operação que inverte a fase de ket um não altera ket zero, e a outra operação também deixa ket zero como estava. Nos dois casos, a medição entrega zero."
+    },
+    {
+      "voz": "teo",
+      "texto": "Então eu mando ket um. A inversão de fase deve transformar um em zero ou produzir algum terceiro resultado."
+    },
+    {
+      "voz": "nina",
+      "texto": "Ela não troca ket um por ket zero. Ela muda o sinal da amplitude associada a ket um, mas uma medição direta ainda produz um com certeza. A fase mudou, porém esse teste não consegue enxergar a mudança."
+    },
+    {
+      "voz": "teo",
+      "texto": "Se nem a medição de zero nem a de um detecta a diferença, essa fase parece só uma anotação matemática. Talvez as duas caixas sejam fisicamente indistinguíveis."
+    },
+    {
+      "voz": "nina",
+      "texto": "A gente vai tornar a diferença observável usando interferência. Primeiro, preparamos o qubit em ket zero e aplicamos uma porta Hadamard. Isso cria uma superposição com amplitudes para zero e um."
+    },
+    {
+      "voz": "teo",
+      "texto": "Ou seja, a Hadamard joga uma moeda e escolhe zero ou um. Depois a caixa recebe um valor que já está decidido, mas escondido da gente."
+    },
+    {
+      "voz": "nina",
+      "texto": "Essa explicação prevê corretamente uma medição feita logo depois da Hadamard: metade zero e metade um ao longo de muitas execuções. Mas ela perde a informação de fase que o restante do circuito vai usar. Por enquanto, vamos deixar o qubit sem medição."
+    },
+    {
+      "voz": "teo",
+      "texto": "A caixa que inverte a fase muda o sinal da parte associada a um. Mesmo assim, se eu medir logo depois dela, continuo vendo metade zero e metade um."
+    },
+    {
+      "voz": "nina",
+      "texto": "Correto. Então acrescentamos uma segunda Hadamard depois da caixa. Essa última porta converte a relação de fase entre as amplitudes numa diferença entre resultados de medição."
+    },
+    {
+      "voz": "teo",
+      "texto": "Não vejo como isso ajuda. Se a primeira Hadamard tornou o resultado aleatório, a segunda deveria embaralhar tudo mais uma vez."
+    },
+    {
+      "voz": "nina",
+      "texto": "Essa é a previsão da ideia de uma moeda escondida. Vamos testá-la nos dois circuitos possíveis. A única diferença entre eles será o que acontece dentro da caixa."
+    },
+    {
+      "voz": "teo",
+      "texto": "Minha aposta é metade zero e metade um nos dois casos. Afinal, a caixa só mexeu num sinal que não afetava as probabilidades."
+    },
+    {
+      "voz": "nina",
+      "texto": "Quando a caixa não faz nada, a segunda Hadamard desfaz o efeito da primeira. No circuito ideal, a medição final produz zero em todas as execuções. As amplitudes que levariam ao resultado um se cancelam."
+    },
+    {
+      "voz": "teo",
+      "texto": "Até aí parece uma operação sendo desfeita pela outra. A primeira Hadamard leva pra superposição, e a segunda traz de volta pra ket zero."
+    },
+    {
+      "voz": "nina",
+      "texto": "Agora vem a quebra da intuição: quando a caixa inverte a fase de ket um, a medição final produz um em todas as execuções ideais. Antes da última Hadamard, os dois casos dariam exatamente as mesmas probabilidades numa medição direta. Depois dela, viram respostas opostas e determinísticas."
+    },
+    {
+      "voz": "teo",
+      "texto": "Espera aí. Uma alteração que não mudava a chance de observar zero ou um passou a decidir completamente o resultado só porque veio outra porta depois?"
+    },
+    {
+      "voz": "nina",
+      "texto": "Isso é interferência quântica. No caso sem inversão, as contribuições para zero se reforçam e as contribuições para um se cancelam. Com a inversão de fase, o padrão troca: as contribuições para zero se cancelam e as de um se reforçam."
+    },
+    {
+      "voz": "teo",
+      "texto": "Então o computador calculou os dois caminhos ao mesmo tempo e escolheu o certo no final. É aquela história de testar todas as possibilidades de uma vez, não é?"
+    },
+    {
+      "voz": "nina",
+      "texto": "Não. A medição não deixa a gente consultar uma lista de cálculos paralelos, e o circuito não escolhe magicamente uma resposta correta. O algoritmo prepara amplitudes e fases para que a evolução física produza interferência útil antes da medição."
+    },
+    {
+      "voz": "teo",
+      "texto": "E se eu medir logo depois da primeira Hadamard para descobrir qual caminho o qubit tomou? Depois ainda posso passar o resultado pela caixa e pela segunda Hadamard."
+    },
+    {
+      "voz": "nina",
+      "texto": "Pode, mas o algoritmo deixa de funcionar como planejado. A medição intermediária registra zero ou um e elimina a coerência de fase usada pela interferência. A medição final passa a produzir zero e um aleatoriamente, sem revelar com certeza qual caixa estava presente."
+    },
+    {
+      "voz": "teo",
+      "texto": "Então um circuito não é só uma lista de portas que posso interromper à vontade. A posição da medição também faz parte do algoritmo."
+    },
+    {
+      "voz": "nina",
+      "texto": "Exatamente. Nosso circuito completo tem cinco etapas: iniciar em ket zero, aplicar Hadamard, consultar a caixa, aplicar outra Hadamard e medir. A ordem organiza a preparação, a transformação da fase, a interferência e a leitura da resposta."
+    },
+    {
+      "voz": "teo",
+      "texto": "Se o resultado ideal é determinístico, uma única execução resolve o problema. Por que as plataformas quânticas vivem pedindo centenas ou milhares de execuções?"
+    },
+    {
+      "voz": "nina",
+      "texto": "No modelo ideal, uma execução correta já entrega a resposta. Em equipamentos reais, preparação, portas e medição podem sofrer erros, então a gente repete o circuito para enxergar a distribuição dos resultados. Essas repetições costumam ser chamadas de disparos."
+    },
+    {
+      "voz": "teo",
+      "texto": "Executar é diferente de desenhar o circuito, então. Primeiro descrevo as operações, depois envio essa descrição para um simulador ou processador quântico repetir."
+    },
+    {
+      "voz": "nina",
+      "texto": "Isso. O sistema ainda pode adaptar o circuito às portas disponíveis no equipamento antes da execução. No fim, ele devolve contagens, como quantas vezes apareceu zero e quantas vezes apareceu um."
+    },
+    {
+      "voz": "teo",
+      "texto": "Se quase todas as execuções terminarem em zero, concluo que a caixa não inverteu a fase. Se quase todas terminarem em um, concluo que houve a inversão, aceitando que o hardware real pode produzir alguns resultados errados."
+    },
+    {
+      "voz": "nina",
+      "texto": "Esse é seu primeiro algoritmo completo: um problema definido, um circuito que usa interferência, uma execução e uma regra para interpretar a medição. Ele não testa todas as respostas ao mesmo tempo; ele transforma fase em evidência observável. No próximo passo do site, você vai montar esse circuito e comparar o resultado ideal com uma execução sujeita a ruído."
+    }
+  ]
+}
