@@ -24,10 +24,13 @@ if (!existsSync(root)) {
 createServer((request, response) => {
   const pathname = decodeURIComponent(new URL(request.url ?? "/", "http://localhost").pathname);
   const relative = pathname.replace(/^\/+/, "");
+  // Mesma precedência do deploy/nginx.quantical.conf: arquivo exato, depois
+  // .html, e só então o índice de diretório. Manter as duas ordens iguais faz
+  // uma quebra de roteamento aparecer nos testes locais em vez de só em produção.
   const candidates = [
     resolve(root, relative),
-    resolve(root, relative, "index.html"),
     resolve(root, `${relative}.html`),
+    resolve(root, relative, "index.html"),
   ];
   let file = candidates.find(
     (candidate) =>

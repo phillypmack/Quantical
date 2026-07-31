@@ -1,21 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  CheckCircle2,
-  Circle,
-  FlaskConical,
-  Lightbulb,
-  RotateCcw,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Circle, Clock, Target } from "lucide-react";
 
 import type { Module, Track } from "@/data/curriculum";
 import { getModuleLessons } from "@/data/curriculum";
+import { getGlossaryEntry } from "@/data/glossary";
+import { getLesson } from "@/data/lessons";
 import { cn } from "@/lib/cn";
+import { LessonBlocks } from "./lesson/blocks";
+import { Quiz } from "./lesson/quiz";
+import { ExerciseWorkbench } from "./quantum/exercise-workbench";
+import { GuidedExperiment } from "./quantum/guided-experiment";
 import { useProgress } from "./progress-provider";
 
 type LessonExperienceProps = {
@@ -27,10 +24,10 @@ type LessonExperienceProps = {
   nextLabel?: string;
 };
 
-const stageCopy: Record<string, { title: string; kicker: string; verb: string }> = {
-  teoria: { title: "Construa a intuição", kicker: "Conceito", verb: "entender" },
-  experimento: { title: "Teste a ideia", kicker: "Experimento", verb: "observar" },
-  desafio: { title: "Faça por conta própria", kicker: "Desafio", verb: "construir" },
+const stageCopy: Record<string, { kicker: string; fallbackTitle: string }> = {
+  teoria: { kicker: "Conceito", fallbackTitle: "Construa a intuição" },
+  experimento: { kicker: "Experimento", fallbackTitle: "Teste a ideia" },
+  desafio: { kicker: "Desafio", fallbackTitle: "Faça por conta própria" },
 };
 
 export function LessonExperience({
@@ -42,172 +39,164 @@ export function LessonExperience({
   nextLabel,
 }: LessonExperienceProps) {
   const { completed, completeLesson } = useProgress();
-  const [selected, setSelected] = useState<number | null>(null);
-  const [checked, setChecked] = useState(false);
-  const lesson = stageCopy[stageId] ?? stageCopy.teoria;
+  const lesson = getLesson(lessonId);
+  const stage = stageCopy[stageId] ?? stageCopy.teoria;
   const stages = getModuleLessons(track.id, module.id);
   const isComplete = completed.includes(lessonId);
-  const answerOptions = useMemo(
-    () => [
-      `É uma ferramenta para ${module.description.toLowerCase()}`,
-      "É apenas uma forma diferente de armazenar bits clássicos.",
-      "Só existe quando um computador está conectado à internet.",
-    ],
-    [module.description],
-  );
+  const doneCount = stages.filter((item) => completed.includes(item.id)).length;
 
-  const checkAnswer = () => {
-    if (selected === null) return;
-    setChecked(true);
-    if (selected === 0) completeLesson(lessonId, 100);
-  };
+  // O estágio "experimento" e o "desafio" concluem por ação, não por quiz.
+  const [experimentDone, setExperimentDone] = useState(false);
 
   return (
     <div className="lesson-layout">
       <aside className="lesson-sidebar">
-        <Link href="/aprender" className="lesson-back"><ArrowLeft size={15} /> Todas as trilhas</Link>
+        <Link href="/aprender" className="lesson-back">
+          <ArrowLeft size={15} /> Todas as trilhas
+        </Link>
         <div className="lesson-track-label" style={{ color: track.accent }}>
           {track.eyebrow}
         </div>
         <h2>{module.title}</h2>
+
         <div className="lesson-stage-list">
-          {stages.map((stage, index) => {
-            const done = completed.includes(stage.id);
-            return (
-              <Link
-                className={cn("lesson-stage-link", stage.id === lessonId && "is-current")}
-                href={stage.href}
-                key={stage.id}
-              >
-                {done ? <CheckCircle2 size={17} /> : <Circle size={17} />}
-                <span><small>0{index + 1}</small>{stage.label}</span>
-              </Link>
-            );
-          })}
+          {stages.map((item, index) => (
+            <Link
+              className={cn("lesson-stage-link", item.id === lessonId && "is-current")}
+              href={item.href}
+              key={item.id}
+            >
+              {completed.includes(item.id) ? <CheckCircle2 size={17} /> : <Circle size={17} />}
+              <span>
+                <small>0{index + 1}</small>
+                {item.label}
+              </span>
+            </Link>
+          ))}
         </div>
+
         <div className="lesson-module-progress">
           <span>Progresso do módulo</span>
-          <strong>{stages.filter((stage) => completed.includes(stage.id)).length}/3</strong>
-          <i><b style={{ width: `${(stages.filter((stage) => completed.includes(stage.id)).length / 3) * 100}%` }} /></i>
+          <strong>
+            {doneCount}/{stages.length}
+          </strong>
+          <i>
+            <b style={{ width: `${(doneCount / stages.length) * 100}%` }} />
+          </i>
         </div>
+
+        {lesson?.glossaryRefs.length ? (
+          <div className="lesson-terms">
+            <span>Termos desta aula</span>
+            <ul>
+              {lesson.glossaryRefs.map((id) => {
+                const entry = getGlossaryEntry(id);
+                if (!entry) return null;
+                return (
+                  <li key={id} title={entry.definition}>
+                    {entry.term}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ) : null}
       </aside>
 
       <article className="lesson-content">
         <header className="lesson-heading">
           <div>
-            <span>{lesson.kicker} · {module.duration < 50 ? "12 min" : "18 min"}</span>
-            <h1>{lesson.title}:<br /><em>{module.shortTitle}</em></h1>
+            <span>
+              {stage.kicker}
+              {/* Antes era um "12 min"/"18 min" fixo que ignorava o dado real. */}
+              {lesson ? (
+                <>
+                  {" · "}
+                  <Clock size={13} /> {lesson.minutes} min
+                </>
+              ) : null}
+            </span>
+            <h1>
+              {lesson?.title ?? stage.fallbackTitle}
+              {!lesson && (
+                <>
+                  :<br />
+                  <em>{module.shortTitle}</em>
+                </>
+              )}
+            </h1>
           </div>
           <span className="lesson-number">{String(module.number).padStart(2, "0")}</span>
         </header>
 
-        <p className="lesson-opening">
-          {module.description} Nesta aula, você vai {lesson.verb} como{" "}
-          <strong>{module.concepts.join(", ")}</strong> se conectam em um programa quântico.
-        </p>
+        {lesson ? (
+          <>
+            <p className="lesson-opening">{lesson.summary}</p>
 
-        <section className="lesson-prose">
-          <h2>Uma nova forma de representar informação</h2>
-          <p>
-            Em computação quântica, não descrevemos apenas respostas prontas. Descrevemos
-            um espaço de possibilidades e as transformações que acontecem dentro dele.
-            Cada operação muda as amplitudes do estado, e essas amplitudes determinam o
-            que podemos observar ao medir.
-          </p>
-          <p>
-            O ponto central de <strong>{module.title.toLowerCase()}</strong> é aprender
-            a separar três momentos: preparar o estado, transformá-lo com portas e,
-            somente então, realizar a medição. Essa ordem é a gramática básica de todo
-            circuito quântico.
-          </p>
-        </section>
+            {lesson.objectives.length > 0 && (
+              <div className="lesson-objectives">
+                <span>
+                  <Target size={14} /> Ao final desta aula você vai conseguir
+                </span>
+                <ul>
+                  {lesson.objectives.map((objective) => (
+                    <li key={objective}>{objective}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-        <div className="concept-card">
-          <div className="concept-card-label"><Lightbulb size={16} /> Ideia-chave</div>
-          <p>
-            Um circuito não calcula uma única resposta de forma direta. Ele organiza
-            amplitudes para tornar algumas respostas mais prováveis que outras.
-          </p>
-          <div className="state-notation">|ψ⟩ = α|0⟩ + β|1⟩</div>
-          <small>|α|² + |β|² = 1</small>
-        </div>
+            <section className="lesson-prose">
+              <LessonBlocks blocks={lesson.blocks} />
+            </section>
 
-        <section className="lesson-prose">
-          <h2>Do conceito ao circuito</h2>
-          <p>
-            A maneira mais segura de criar intuição é prever o resultado antes de
-            executar. Imagine o estado inicial, aplique mentalmente cada transformação
-            e só depois compare sua hipótese com o histograma do simulador.
-          </p>
-        </section>
-
-        <div className="lesson-experiment">
-          <div>
-            <span><FlaskConical size={15} /> Experimento guiado</span>
-            <h3>{module.project}</h3>
-            <p>Abra o laboratório com um circuito preparado para este conceito.</p>
-          </div>
-          <Link className="button button--light button--small" href="/laboratorio">
-            Experimentar <ArrowRight size={15} />
-          </Link>
-        </div>
-
-        <section className="lesson-quiz">
-          <span className="pill">Cheque sua intuição</span>
-          <h2>Qual afirmação descreve melhor “{module.shortTitle}” neste contexto?</h2>
-          <div className="quiz-options">
-            {answerOptions.map((option, index) => (
-              <button
-                className={cn(
-                  selected === index && "is-selected",
-                  checked && index === 0 && "is-correct",
-                  checked && selected === index && index !== 0 && "is-wrong",
-                )}
-                key={option}
-                onClick={() => {
-                  setSelected(index);
-                  setChecked(false);
+            {lesson.guided && (
+              <GuidedExperiment
+                onComplete={() => {
+                  setExperimentDone(true);
+                  completeLesson(lessonId, 100);
                 }}
-                type="button"
-              >
-                <span>{String.fromCharCode(65 + index)}</span>
-                {option}
-                {checked && index === 0 && <Check size={17} />}
-              </button>
-            ))}
-          </div>
-          {checked && selected !== 0 && (
-            <p className="quiz-feedback">Quase. Lembre que o conceito descreve uma transformação ou representação genuinamente quântica.</p>
-          )}
-          {checked && selected === 0 && (
-            <p className="quiz-feedback quiz-feedback--correct">Exato. A intuição está no lugar certo — aula concluída!</p>
-          )}
-          {!isComplete || !checked ? (
-            <button className="button button--dark" disabled={selected === null} onClick={checkAnswer} type="button">
-              Verificar resposta
-            </button>
-          ) : null}
-          {checked && selected === 0 && (
-            <button
-              className="quiz-reset"
-              onClick={() => { setSelected(null); setChecked(false); }}
-              type="button"
-            >
-              <RotateCcw size={14} /> Refazer
-            </button>
-          )}
-        </section>
+                steps={lesson.guided.steps}
+                title={lesson.guided.title}
+              />
+            )}
+
+            {lesson.exercise && (
+              <ExerciseWorkbench
+                exercise={lesson.exercise}
+                onSolved={() => completeLesson(lessonId, 100)}
+                solved={isComplete}
+              />
+            )}
+
+            <Quiz
+              completed={isComplete}
+              lessonId={lessonId}
+              onPass={(score) => completeLesson(lessonId, score)}
+              questions={lesson.quiz}
+            />
+          </>
+        ) : (
+          <PendingContent module={module} />
+        )}
 
         <footer className="lesson-footer-nav">
           <div>
-            <span>{isComplete ? "Aula concluída" : "Conclua o quiz para avançar"}</span>
-            <strong>{isComplete ? "Seu progresso foi salvo." : "Você está quase lá."}</strong>
+            <span>{isComplete ? "Aula concluída" : "Conclua a atividade para avançar"}</span>
+            <strong>
+              {isComplete
+                ? "Seu progresso foi salvo."
+                : experimentDone
+                  ? "Quase lá."
+                  : "Você está quase lá."}
+            </strong>
           </div>
           {nextHref ? (
             <Link
               aria-disabled={!isComplete}
               className={cn("button button--dark", !isComplete && "is-disabled")}
-              href={isComplete ? nextHref : "#quiz"}
+              // Antes caía em "#quiz", âncora que não existia em lugar nenhum.
+              href={isComplete ? nextHref : `#${lesson?.guided ? "experimento" : "quiz"}`}
             >
               {nextLabel ?? "Próxima aula"} <ArrowRight size={16} />
             </Link>
@@ -219,5 +208,33 @@ export function LessonExperience({
         </footer>
       </article>
     </div>
+  );
+}
+
+/**
+ * Módulos cujo conteúdo ainda não foi escrito. Dizer isso na cara é mais
+ * honesto do que renderizar 1100 caracteres genéricos e chamar de aula.
+ */
+function PendingContent({ module }: { module: Module }) {
+  return (
+    <section className="lesson-pending">
+      <h2>Esta aula ainda está sendo escrita</h2>
+      <p>
+        O módulo <strong>{module.title}</strong> cobre {module.concepts.join(", ")}. O conteúdo
+        completo — com experimento guiado e exercício corrigido — está em produção.
+      </p>
+      <p>
+        Enquanto isso, o módulo <strong>Do bit ao qubit</strong> já está pronto no formato final, e
+        o laboratório aceita qualquer circuito que você queira testar.
+      </p>
+      <div className="lesson-pending-actions">
+        <Link className="button button--dark button--small" href="/curso/iniciante/bits-e-qubits/teoria">
+          Começar pelo módulo 1 <ArrowRight size={15} />
+        </Link>
+        <Link className="button button--light button--small" href="/laboratorio">
+          Abrir o laboratório
+        </Link>
+      </div>
+    </section>
   );
 }

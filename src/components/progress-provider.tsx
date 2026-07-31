@@ -6,176 +6,62 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { applyCompletion, emptyState } from "@/lib/progress/state";
+import * as store from "@/lib/progress/store";
+import { synchronize } from "@/lib/progress/sync";
+import type { ProgressState, SavedProject, SyncStatus } from "@/lib/progress/types";
+import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
-export type SavedProject = {
-  id: string;
-  title: string;
-  code: string;
-  updatedAt: string;
-};
-
-type ProgressState = {
-  completed: string[];
-  quizScores: Record<string, number>;
-  lastLesson?: string;
-  lastStudyDate?: string;
-  streak: number;
-  projects: SavedProject[];
-};
+export type { SavedProject } from "@/lib/progress/types";
 
 type ProgressContextValue = ProgressState & {
   hydrated: boolean;
+  syncStatus: SyncStatus;
+  syncError?: string;
   completeLesson: (id: string, score?: number) => void;
-  saveProject: (project: Omit<SavedProject, "id" | "updatedAt"> & { id?: string }) => string;
+  saveProject: (project: { id?: string; title: string; code: string; circuit?: SavedProject["circuit"] }) => string;
   removeProject: (id: string) => void;
   resetProgress: () => void;
-};
-
-const initialState: ProgressState = {
-  completed: [],
-  quizScores: {},
-  streak: 0,
-  projects: [],
+  setUnlockOverride: (moduleId: string) => void;
 };
 
 const ProgressContext = createContext<ProgressContextValue | null>(null);
-const storageKey = "quantical:progress:v1";
-
-function dayDifference(first: string, second: string) {
-  const a = new Date(`${first}T12:00:00`).getTime();
-  const b = new Date(`${second}T12:00:00`).getTime();
-  return Math.round((b - a) / 86_400_000);
-}
 
 export function ProgressProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<ProgressState>(initialState);
-  const [hydrated, setHydrated] = useState(false);
-  const syncAttempted = useRef(false);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) setState({ ...initialState, ...JSON.parse(saved) });
-    } catch {
-      localStorage.removeItem(storageKey);
-    } finally {
-      setHydrated(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (hydrated) localStorage.setItem(storageKey, JSON.stringify(state));
-  }, [state, hydrated]);
-
-  useEffect(() => {
-    if (!hydrated || syncAttempted.current) return;
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-    syncAttempted.current = true;
-
-    async function synchronize() {
-      const { data: sessionData } = await supabase!.auth.getSession();
-      const user = sessionData.session?.user;
-      if (!user) {
-        syncAttempted.current = false;
-        return;
-      }
-
-      if (state.completed.length) {
-        await supabase!.from("lesson_progress").upsert(
-          state.completed.map((lessonId) => ({
-            user_id: user.id,
-            lesson_id: lessonId,
-            progress: 100,
-            completed_at: new Date().toISOString(),
-          })),
-          { onConflict: "user_id,lesson_id" },
-        );
-      }
-      if (state.projects.length) {
-        await supabase!.from("projects").upsert(
-          state.projects.map((project) => ({
-            id: /^[0-9a-f-]{36}$/i.test(project.id) ? project.id : crypto.randomUUID(),
-            user_id: user.id,
-            title: project.title,
-            code: project.code,
-            circuit: {},
-            updated_at: project.updatedAt,
-          })),
-        );
-      }
-
-      const [remoteProgress, remoteProjects] = await Promise.all([
-        supabase!.from("lesson_progress").select("lesson_id").eq("user_id", user.id).eq("progress", 100),
-        supabase!.from("projects").select("id,title,code,updated_at").eq("user_id", user.id).order("updated_at", { ascending: false }),
-      ]);
-
-      setState((current) => ({
-        ...current,
-        completed: Array.from(
-          new Set([
-            ...current.completed,
-            ...(remoteProgress.data ?? []).map((item) => item.lesson_id as string),
-          ]),
-        ),
-        projects: [
-          ...(remoteProjects.data ?? []).map((project) => ({
-            id: project.id as string,
-            title: project.title as string,
-            code: project.code as string,
-            updatedAt: project.updated_at as string,
-          })),
-          ...current.projects.filter(
-            (local) => !(remoteProjects.data ?? []).some((remote) => remote.id === local.id),
-          ),
-        ],
-      }));
-    }
-
-    void synchronize();
-  }, [hydrated, state.completed, state.projects]);
+  // O estado vive num store externo (localStorage). useSyncExternalStore é o
+  // encaixe certo e evita o setState-dentro-de-efeito que a v1 fazia na
+  // hidratação, que dispara renders em cascata.
+  const snapshot = useSyncExternalStore(
+    store.subscribe,
+    store.getSnapshot,
+    store.getServerSnapshot,
+  );
 
   const completeLesson = useCallback((id: string, score?: number) => {
-    setState((current) => {
-      const today = new Date().toISOString().slice(0, 10);
-      const difference = current.lastStudyDate
-        ? dayDifference(current.lastStudyDate, today)
-        : undefined;
-      const streak =
-        difference === 0
-          ? current.streak
-          : difference === 1
-            ? current.streak + 1
-            : 1;
-      return {
-        ...current,
-        completed: current.completed.includes(id)
-          ? current.completed
-          : [...current.completed, id],
-        quizScores:
-          score === undefined
-            ? current.quizScores
-            : { ...current.quizScores, [id]: Math.max(score, current.quizScores[id] ?? 0) },
-        lastLesson: id,
-        lastStudyDate: today,
-        streak,
-      };
-    });
+    store.update((current) => applyCompletion(current, id, score));
   }, []);
 
   const saveProject = useCallback(
-    (project: Omit<SavedProject, "id" | "updatedAt"> & { id?: string }) => {
+    (project: { id?: string; title: string; code: string; circuit?: SavedProject["circuit"] }) => {
       const id = project.id ?? crypto.randomUUID();
-      setState((current) => ({
+      store.update((current) => ({
         ...current,
+        // Salvar de novo não pode ressuscitar a lápide de um id reaproveitado.
+        deletedProjects: Object.fromEntries(
+          Object.entries(current.deletedProjects).filter(([key]) => key !== id),
+        ),
         projects: [
-          { id, title: project.title, code: project.code, updatedAt: new Date().toISOString() },
+          {
+            id,
+            title: project.title,
+            code: project.code,
+            circuit: project.circuit,
+            updatedAt: new Date().toISOString(),
+          },
           ...current.projects.filter((item) => item.id !== id),
         ],
       }));
@@ -185,24 +71,97 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   );
 
   const removeProject = useCallback((id: string) => {
-    setState((current) => ({
+    store.update((current) => ({
       ...current,
       projects: current.projects.filter((project) => project.id !== id),
+      // Lápide: sem ela o próximo sync baixa o projeto de volta.
+      deletedProjects: { ...current.deletedProjects, [id]: new Date().toISOString() },
     }));
   }, []);
 
-  const resetProgress = useCallback(() => setState(initialState), []);
+  const resetProgress = useCallback(() => {
+    const resetAt = new Date().toISOString();
+    store.update((current) => ({
+      ...emptyState,
+      // Marca o corte para o merge descartar conclusões remotas anteriores.
+      resetAt,
+      deletedProjects: Object.fromEntries(
+        current.projects.map((project) => [project.id, resetAt]),
+      ),
+    }));
+  }, []);
 
-  const value = useMemo(
+  const setUnlockOverride = useCallback((moduleId: string) => {
+    store.update((current) =>
+      current.unlockedOverrides.includes(moduleId)
+        ? current
+        : { ...current, unlockedOverrides: [...current.unlockedOverrides, moduleId] },
+    );
+  }, []);
+
+  // Sincroniza ao hidratar e a cada mudança de sessão. Diferente da v1, não
+  // depende de state.completed/state.projects — aquelas dependências faziam
+  // toda conclusão disparar um getSession() novo quando ninguém estava logado.
+  useEffect(() => {
+    if (!snapshot.hydrated || !isSupabaseConfigured()) return;
+
+    let cancelled = false;
+    let unsubscribe: (() => void) | undefined;
+
+    const run = async (userId: string | undefined) => {
+      if (!userId || cancelled) return;
+      const supabase = await getSupabaseBrowserClient();
+      if (!supabase || cancelled) return;
+
+      store.setSyncStatus("syncing");
+      try {
+        const merged = await synchronize(supabase, userId, store.getSnapshot().state);
+        if (cancelled) return;
+        store.update(() => merged);
+        store.setSyncStatus("synced");
+      } catch (error) {
+        if (cancelled) return;
+        // Falha de sync não pode travar o aprendizado: o app segue local e
+        // avisa sem bloquear.
+        store.setSyncStatus(
+          typeof navigator !== "undefined" && !navigator.onLine ? "offline" : "error",
+          error instanceof Error ? error.message : "Não foi possível sincronizar.",
+        );
+      }
+    };
+
+    void (async () => {
+      const supabase = await getSupabaseBrowserClient();
+      if (!supabase || cancelled) return;
+
+      const { data } = await supabase.auth.getSession();
+      void run(data.session?.user.id);
+
+      const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+        void run(session?.user.id);
+      });
+      unsubscribe = () => listener.subscription.unsubscribe();
+    })();
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, [snapshot.hydrated]);
+
+  const value = useMemo<ProgressContextValue>(
     () => ({
-      ...state,
-      hydrated,
+      ...snapshot.state,
+      hydrated: snapshot.hydrated,
+      syncStatus: snapshot.syncStatus,
+      syncError: snapshot.syncError,
       completeLesson,
       saveProject,
       removeProject,
       resetProgress,
+      setUnlockOverride,
     }),
-    [state, hydrated, completeLesson, saveProject, removeProject, resetProgress],
+    [snapshot, completeLesson, saveProject, removeProject, resetProgress, setUnlockOverride],
   );
 
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;

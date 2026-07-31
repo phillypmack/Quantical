@@ -1,0 +1,57 @@
+import type { GuidedStep } from "@/components/quantum/guided-experiment";
+import type { Circuit } from "@/lib/quantum/types";
+import type { Exercise } from "@/lib/quantum/validator";
+import type { TrackId } from "../curriculum";
+
+export type StageId = "teoria" | "experimento" | "desafio";
+
+export type Block =
+  | { kind: "p"; text: string }
+  | { kind: "h"; text: string }
+  | { kind: "list"; ordered?: boolean; items: string[] }
+  | { kind: "callout"; variant: "ideia" | "atencao" | "curiosidade"; title?: string; text: string }
+  | { kind: "formula"; latex: string; caption?: string }
+  | { kind: "code"; language: "python" | "text"; code: string; caption?: string }
+  /**
+   * Metáfora seguida da DEMOLIÇÃO dela.
+   *
+   * Toda metáfora de física quântica é uma mentira útil, e o erro pedagógico
+   * comum é entregar a metáfora e parar. A compreensão nasce na quebra — e
+   * aqui a quebra é um circuito executável, não uma afirmação: o aluno não lê
+   * que a metáfora falha, ele roda e vê falhar.
+   */
+  | { kind: "metaphor"; image: string; breaks: string; circuit: Circuit; caption: string }
+  | { kind: "figure"; view: "bloch" | "histogram" | "circuit"; circuit: Circuit; caption: string };
+
+export type QuestionOption = {
+  text: string;
+  correct: boolean;
+  /** Por que esta alternativa está certa ou errada. Obrigatória em todas. */
+  explanation: string;
+};
+
+export type Question = {
+  id: string;
+  prompt: string;
+  options: QuestionOption[];
+};
+
+export type Lesson = {
+  /** "iniciante/bits-e-qubits/teoria" — igual ao que getLessonId() produz. */
+  id: string;
+  trackId: TrackId;
+  moduleId: string;
+  stage: StageId;
+  title: string;
+  summary: string;
+  /** Substitui o falso `duration < 50 ? "12 min" : "18 min"` do cabeçalho. */
+  minutes: number;
+  objectives: string[];
+  blocks: Block[];
+  quiz: Question[];
+  /** Roteiro do estágio "experimento". */
+  guided?: { title: string; steps: GuidedStep[] };
+  /** Exercício corrigido do estágio "desafio". */
+  exercise?: Exercise;
+  glossaryRefs: string[];
+};

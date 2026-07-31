@@ -14,9 +14,11 @@ export function HadamardDemo() {
     const circuit: Circuit = {
       qubits: 1,
       shots: 1024,
-      operations: running
-        ? [{ id: "h", gate: "H", targets: [0], position: 0 }]
-        : [],
+      // A semente muda a cada execução: antes o amostrador tinha semente fixa
+      // e rodar de novo devolvia exatamente os mesmos números.
+      seed: 0x51f15e + runCount,
+      captureSteps: false,
+      operations: running ? [{ id: "h", gate: "H", targets: [0], position: 0 }] : [],
     };
     return simulateCircuit(circuit);
   }, [running, runCount]);

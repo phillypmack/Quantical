@@ -30,30 +30,30 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
   const values = await params;
-  const module = getModule(values.track, values.module);
+  const courseModule = getModule(values.track, values.module);
   return {
-    title: module ? `${module.title} — Aula` : "Aula",
-    description: module?.description,
+    title: courseModule ? `${courseModule.title} — Aula` : "Aula",
+    description: courseModule?.description,
   };
 }
 
 export default async function LessonPage({ params }: LessonPageProps) {
   const values = await params;
   const track = getTrack(values.track);
-  const module = getModule(values.track, values.module);
+  const courseModule = getModule(values.track, values.module);
   const validLesson = getAllLessons().find(
     (item) =>
       item.track.id === values.track &&
       item.module.id === values.module &&
       item.id.endsWith(`/${values.lesson}`),
   );
-  if (!track || !module || !validLesson) notFound();
+  if (!track || !courseModule || !validLesson) notFound();
 
   const next = getNextLesson(values.track, values.module, values.lesson);
   return (
     <LessonExperience
       lessonId={getLessonId(values.track, values.module, values.lesson)}
-      module={module}
+      module={courseModule}
       nextHref={next?.href}
       nextLabel={next ? `${next.label}: ${next.module.shortTitle}` : undefined}
       stageId={values.lesson}

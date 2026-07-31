@@ -28,9 +28,16 @@ writeFileSync(
     const url = new URL(request.url);
     let response = await env.ASSETS.fetch(request);
     if (response.status === 404 && !url.pathname.split("/").at(-1)?.includes(".")) {
-      const fallback = new URL(url);
-      fallback.pathname = \`\${url.pathname.replace(/\\/$/, "")}/index.html\`;
-      response = await env.ASSETS.fetch(new Request(fallback, request));
+      // A exportação estática grava cada rota como <rota>.html; o diretório
+      // <rota>/ existe mas contém apenas payloads RSC, sem index.html.
+      // Por isso .html vem primeiro.
+      const base = url.pathname.replace(/\\/$/, "");
+      for (const candidate of [\`\${base}.html\`, \`\${base}/index.html\`]) {
+        const fallback = new URL(url);
+        fallback.pathname = candidate;
+        response = await env.ASSETS.fetch(new Request(fallback, request));
+        if (response.status !== 404) break;
+      }
     }
     return response;
   },

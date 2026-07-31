@@ -35,7 +35,7 @@ export const tracks: Track[] = [
     audience: "Para mentes curiosas",
     description:
       "Uma introdução visual, sem pré-requisitos, para pensar como um computador quântico.",
-    accent: "#7457e8",
+    accent: "#5d42cc",
     modules: [
       { id: "bits-e-qubits", number: 1, title: "Do bit ao qubit", shortTitle: "Bits → Qubits", description: "Descubra por que um qubit é muito mais que um 0 ou 1.", concepts: ["bit clássico", "qubit", "estado"], duration: 34, project: "Seu primeiro qubit" },
       { id: "superposicao", number: 2, title: "A arte da superposição", shortTitle: "Superposição", description: "Explore estados que guardam possibilidades ao mesmo tempo.", concepts: ["amplitude", "probabilidade", "Hadamard"], duration: 42, project: "Moeda quântica" },
@@ -52,7 +52,7 @@ export const tracks: Track[] = [
     audience: "Para quem já programa",
     description:
       "Traduza lógica clássica para circuitos quânticos e escreva seus primeiros programas em Qiskit.",
-    accent: "#087d9d",
+    accent: "#076f88",
     modules: [
       { id: "qiskit", number: 1, title: "Qiskit sem mistério", shortTitle: "Qiskit", description: "Modele, execute e inspecione circuitos com uma API familiar.", concepts: ["QuantumCircuit", "simulador", "counts"], duration: 45, project: "Hello, quantum" },
       { id: "estados-bell", number: 2, title: "Estados de Bell", shortTitle: "Bell", description: "Programe e teste correlações quânticas fundamentais.", concepts: ["H", "CX", "correlação"], duration: 50, project: "Teste de Bell" },
@@ -69,7 +69,7 @@ export const tracks: Track[] = [
     audience: "Para formação acadêmica",
     description:
       "Conecte a intuição ao formalismo: espaços de Hilbert, operadores e algoritmos.",
-    accent: "#c26431",
+    accent: "#9f481f",
     modules: [
       { id: "algebra-linear", number: 1, title: "Álgebra linear essencial", shortTitle: "Álgebra linear", description: "Revise vetores complexos, bases, matrizes e autovalores.", concepts: ["vetores", "matrizes unitárias", "autovalores"], duration: 80, project: "Notebook vetorial" },
       { id: "dirac", number: 2, title: "Notação de Dirac", shortTitle: "Dirac", description: "Leia e manipule kets, bras, produtos internos e operadores.", concepts: ["ket", "bra", "operador"], duration: 65, project: "Atlas de estados" },

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { parseQiskit } from "./parser";
 import { circuitToQiskit } from "./qiskit";
 import { simulateCircuit } from "./simulator";
-import type { Circuit } from "./types";
+import { MAX_QUBITS, type Circuit } from "./types";
 
 const circuit = (qubits: number, operations: Circuit["operations"]): Circuit => ({
   qubits,
@@ -66,7 +66,20 @@ describe("simulador statevector", () => {
   });
 
   it("recusa circuitos acima do limite", () => {
-    expect(() => simulateCircuit(circuit(7, []))).toThrow(/1 e 6 qubits/);
+    expect(() => simulateCircuit(circuit(MAX_QUBITS + 1, []))).toThrow(
+      new RegExp(`1 e ${MAX_QUBITS} qubits`),
+    );
+  });
+
+  // O teto era 6, cravado em três arquivos. Com Float64Array, 16 qubits são
+  // 2^16 amplitudes e rodam instantaneamente.
+  it("simula no teto de qubits sem estourar", () => {
+    const result = simulateCircuit(circuit(MAX_QUBITS, [
+      { id: "h", gate: "H", targets: [0], position: 0 },
+      { id: "cx", gate: "CNOT", controls: [0], targets: [MAX_QUBITS - 1], position: 1 },
+    ]));
+    expect(result.probabilities).toHaveLength(2 ** MAX_QUBITS);
+    expect(result.probabilities.reduce((sum, value) => sum + value, 0)).toBeCloseTo(1, 8);
   });
 });
 

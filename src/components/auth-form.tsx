@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Check, Github, Mail, ShieldCheck, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { writeLocalUser } from "@/lib/local-user";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 export function AuthForm() {
@@ -19,7 +20,7 @@ export function AuthForm() {
     event.preventDefault();
     setLoading(true);
     setMessage(undefined);
-    const supabase = getSupabaseBrowserClient();
+    const supabase = await getSupabaseBrowserClient();
     if (supabase) {
       const { error } = await supabase.auth.signInWithOtp({
         email,
@@ -33,16 +34,13 @@ export function AuthForm() {
       return;
     }
 
-    localStorage.setItem(
-      "quantical:local-user",
-      JSON.stringify({ name: name || email.split("@")[0], email, local: true }),
-    );
+    writeLocalUser({ name: name || email.split("@")[0], email });
     setLoading(false);
     router.push("/progresso");
   }
 
   async function socialLogin(provider: "google" | "github") {
-    const supabase = getSupabaseBrowserClient();
+    const supabase = await getSupabaseBrowserClient();
     if (!supabase) {
       setMessage("Conecte o Supabase para ativar provedores sociais. Você ainda pode usar a conta local abaixo.");
       return;
@@ -92,7 +90,9 @@ export function AuthForm() {
               <ArrowRight size={16} />
             </button>
           </form>
-          {message && <p className="auth-message">{message}</p>}
+          <p aria-live="polite" className="auth-message" role="status">
+            {message}
+          </p>
           <div className="auth-security"><ShieldCheck size={14} /><span>Sem senha. Sem spam. Seus dados continuam seus.</span></div>
           <Link href="/aprender">Continuar sem conta</Link>
         </div>

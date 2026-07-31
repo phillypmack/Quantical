@@ -6,7 +6,6 @@ import {
   Award,
   BookMarked,
   Flame,
-  FlaskConical,
   Medal,
   Sparkles,
   Target,

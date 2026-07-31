@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./learning.css";
 
 :root {
   --paper: #f5f4ef;
@@ -1775,7 +1776,8 @@ summary {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #8c929f;
+  /* Era #8c929f: 3.4:1 sobre --paper. */
+  color: var(--ink-soft);
   border-radius: 9px;
 }
 
@@ -1793,8 +1795,9 @@ summary {
 }
 
 .lesson-stage-link small {
-  color: #a2a7b1;
-  font-size: 8px;
+  /* Era #a2a7b1 a 8px: 2.3:1 de contraste. */
+  color: var(--ink-soft);
+  font-size: 11px;
   letter-spacing: .08em;
 }
 
@@ -1859,7 +1862,8 @@ summary {
 }
 
 .lesson-number {
-  color: #c3c3bd;
+  /* Era #c3c3bd: 1.9:1. Texto grande ainda exige 3:1 — este dá 3.3:1. */
+  color: #8a8a82;
   font-family: Georgia, serif;
   font-size: 35px;
 }
@@ -3353,9 +3357,24 @@ summary {
   border-radius: 15px;
 }
 
-.challenge-card--violet { --challenge: var(--violet); --challenge-pale: var(--violet-pale); }
-.challenge-card--cyan { --challenge: var(--cyan); --challenge-pale: var(--cyan-pale); }
-.challenge-card--orange { --challenge: var(--orange); --challenge-pale: var(--orange-pale); }
+/* --challenge-ink é a variante para TEXTO pequeno sobre o fundo pálido.
+   O ciano de marca (#087d9d) sobre #dff3f6 dá 4.13:1 — abaixo do mínimo
+   4.5:1 da WCAG AA. O tom escuro resolve sem mudar a identidade. */
+.challenge-card--violet {
+  --challenge: var(--violet);
+  --challenge-pale: var(--violet-pale);
+  --challenge-ink: var(--violet);
+}
+.challenge-card--cyan {
+  --challenge: var(--cyan);
+  --challenge-pale: var(--cyan-pale);
+  --challenge-ink: #076f88;
+}
+.challenge-card--orange {
+  --challenge: var(--orange);
+  --challenge-pale: var(--orange-pale);
+  --challenge-ink: var(--orange);
+}
 
 .challenge-card-top {
   display: flex;
@@ -3370,11 +3389,14 @@ summary {
 }
 
 .challenge-card-top b {
-  padding: 6px 9px;
-  color: var(--challenge);
+  padding: 6px 10px;
+  color: var(--challenge-ink);
   background: var(--challenge-pale);
   border-radius: 999px;
-  font-size: 8px;
+  /* Era 8px: pequeno demais para ler e reprovado no contraste. */
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
@@ -3399,17 +3421,18 @@ summary {
 }
 
 .challenge-gates span {
-  min-width: 30px;
-  height: 30px;
-  padding: 0 7px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 9px;
   display: grid;
   place-items: center;
-  color: var(--challenge);
+  color: var(--challenge-ink);
   background: var(--challenge-pale);
   border: 1px solid color-mix(in srgb, var(--challenge) 30%, transparent);
   border-radius: 5px;
   font-family: Georgia, serif;
-  font-size: 9px;
+  /* Era 9px. */
+  font-size: 12px;
 }
 
 .challenge-goal {
@@ -3421,14 +3444,16 @@ summary {
 }
 
 .challenge-goal small {
-  color: #959aa4;
-  font-size: 7px;
+  /* Era #959aa4 a 7px: 2.4:1 de contraste, praticamente ilegível. */
+  color: var(--ink-soft);
+  font-size: 11px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .challenge-goal strong {
   font-family: ui-monospace, monospace;
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .challenge-card > a {
@@ -3542,8 +3567,10 @@ summary {
 }
 
 .glossary-search > span {
-  color: #959ba6;
-  font-size: 9px;
+  /* Era #959ba6 a 9px sobre branco: 2.5:1, abaixo do mínimo da WCAG AA. */
+  color: var(--ink-soft);
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .glossary-list {
@@ -3819,9 +3846,10 @@ summary {
   height: 50px;
   display: grid;
   place-items: center;
-  color: #9ca1ab;
+  /* Era #9ca1ab a 8px: 2.6:1 de contraste. */
+  color: var(--ink-soft);
   background: linear-gradient(transparent calc(50% - .5px), var(--line) calc(50% - .5px), var(--line) calc(50% + .5px), transparent calc(50% + .5px));
-  font-size: 8px;
+  font-size: 12px;
 }
 
 .auth-divider span {
@@ -3894,8 +3922,9 @@ summary {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: #8d939e;
-  font-size: 8px;
+  /* Era #8d939e a 8px: 3.0:1 de contraste. */
+  color: var(--ink-soft);
+  font-size: 12px;
 }
 
 .auth-security svg {

@@ -1,26 +1,50 @@
-import type { Circuit } from "./types";
+import { GATE_ARITY } from "./simulator";
+import type { Circuit, GateName, Operation } from "./types";
 
-const method: Record<string, string> = {
-  H: "h",
-  X: "x",
-  Y: "y",
-  Z: "z",
-  S: "s",
-  T: "t",
-  RX: "rx",
-  RY: "ry",
-  RZ: "rz",
-  CNOT: "cx",
-  CZ: "cz",
-  SWAP: "swap",
+const method: Partial<Record<GateName, string>> = {
+  I: "id", H: "h", X: "x", Y: "y", Z: "z",
+  S: "s", SDG: "sdg", T: "t", TDG: "tdg",
+  SX: "sx", SXDG: "sxdg", P: "p", U: "u",
+  RX: "rx", RY: "ry", RZ: "rz",
+  CNOT: "cx", CY: "cy", CZ: "cz", CH: "ch",
+  CP: "cp", CRX: "crx", CRY: "cry", CRZ: "crz",
+  CCX: "ccx", CCZ: "ccz", MCX: "mcx", MCZ: "mcz",
+  SWAP: "swap", ISWAP: "iswap", CSWAP: "cswap",
+  BARRIER: "barrier",
 };
 
+/** Frações comuns de π saem legíveis; o resto vai com precisão suficiente. */
 function angle(value = 0) {
+  if (value === 0) return "0";
   const ratio = value / Math.PI;
-  if (Math.abs(ratio - 1) < 1e-8) return "pi";
-  if (Math.abs(ratio - 0.5) < 1e-8) return "pi / 2";
-  if (Math.abs(ratio - 0.25) < 1e-8) return "pi / 4";
-  return value.toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+  for (const [numerator, denominator] of [[1, 1], [1, 2], [1, 4], [1, 8], [3, 4], [3, 2], [2, 1]]) {
+    for (const sign of [1, -1]) {
+      if (Math.abs(ratio - (sign * numerator) / denominator) < 1e-9) {
+        const prefix = sign < 0 ? "-" : "";
+        const head = numerator === 1 ? "pi" : `${numerator} * pi`;
+        return denominator === 1 ? `${prefix}${head}` : `${prefix}${head} / ${denominator}`;
+      }
+    }
+  }
+  // Precisão suficiente para o round-trip não perder o valor.
+  return String(Number(value.toPrecision(12)));
+}
+
+function renderOperation(operation: Operation): string | null {
+  const name = method[operation.gate];
+  if (!name) return null;
+
+  if (operation.gate === "BARRIER") {
+    return `qc.barrier(${operation.targets.join(", ")})`;
+  }
+
+  const paramCount = GATE_ARITY[operation.gate] ?? 0;
+  const args = [
+    ...Array.from({ length: paramCount }, (_, index) => angle(operation.params?.[index])),
+    ...(operation.controls ?? []).map(String),
+    ...operation.targets.map(String),
+  ];
+  return `qc.${name}(${args.join(", ")})`;
 }
 
 export function circuitToQiskit(circuit: Circuit) {
@@ -30,19 +54,13 @@ export function circuitToQiskit(circuit: Circuit) {
     "",
     `qc = QuantumCircuit(${circuit.qubits})`,
   ];
+
   for (const operation of [...circuit.operations].sort((a, b) => a.position - b.position)) {
     if (operation.gate === "MEASURE") continue;
-    const name = method[operation.gate];
-    if (["RX", "RY", "RZ"].includes(operation.gate)) {
-      lines.push(`qc.${name}(${angle(operation.params?.[0])}, ${operation.targets[0]})`);
-    } else if (operation.gate === "CNOT" || operation.gate === "CZ") {
-      lines.push(`qc.${name}(${operation.controls?.[0]}, ${operation.targets[0]})`);
-    } else if (operation.gate === "SWAP") {
-      lines.push(`qc.swap(${operation.targets[0]}, ${operation.targets[1]})`);
-    } else {
-      lines.push(`qc.${name}(${operation.targets[0]})`);
-    }
+    const rendered = renderOperation(operation);
+    if (rendered) lines.push(rendered);
   }
-  lines.push("qc.measure_all()", "", `# Execute com ${circuit.shots} shots no backend de sua escolha`);
+
+  lines.push("qc.measure_all()", "", `shots = ${circuit.shots}`);
   return lines.join("\n");
 }
