@@ -1,0 +1,258 @@
+{
+  "id": "iniciante/superposicao",
+  "titulo": "A arte da superposição",
+  "resumo": "Descubra como amplitudes, probabilidades e a porta Hadamard permitem criar e revelar interferências quânticas.",
+  "arquivo": "iniciante-superposicao.mp3",
+  "duracao": 506.07,
+  "vozes": [
+    "nina",
+    "teo"
+  ],
+  "turnos": [
+    {
+      "at": 0.0,
+      "fim": 15.46,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Boas-vindas! Hoje a gente vai explorar a arte da superposição. Vamos entender o que são amplitudes, como elas viram probabilidades e por que a porta Hadamard faz mais do que lançar uma moeda."
+    },
+    {
+      "at": 16.16,
+      "fim": 26.03,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Superposição é quando o qubit fica em zero e um ao mesmo tempo, certo? Então ele guarda duas respostas prontas no lugar de uma."
+    },
+    {
+      "at": 26.73,
+      "fim": 43.02,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Essa frase pode servir como atalho, mas também cria uma imagem enganosa. O qubit não oferece dois valores clássicos que a gente consegue abrir e ler separadamente. Quando medido na base de zero e um, ele entrega apenas um desses resultados."
+    },
+    {
+      "at": 43.72,
+      "fim": 51.21,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Então talvez seja uma moeda coberta pela mão. Ela já deu cara ou coroa, mas eu só descubro quando olho."
+    },
+    {
+      "at": 51.91,
+      "fim": 69.55,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Essa explicação descreve incerteza clássica: o resultado existe e está escondido. Uma superposição guarda outra coisa, chamada amplitude, associada a cada resultado possível. As amplitudes determinam probabilidades, mas também participam de interferências."
+    },
+    {
+      "at": 70.25,
+      "fim": 84.66,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Probabilidade eu conheço, mas amplitude parece outro nome pra mesma coisa. Se a chance de zero é cinquenta por cento, a amplitude de zero também deve ser cinquenta por cento."
+    },
+    {
+      "at": 85.36,
+      "fim": 101.8,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Não são a mesma quantidade. Para obter uma probabilidade, a gente calcula o quadrado do tamanho da amplitude correspondente. Por exemplo, amplitudes com tamanho um sobre a raiz de dois produzem probabilidades de metade para cada resultado."
+    },
+    {
+      "at": 102.5,
+      "fim": 111.89,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Isso parece uma complicação matemática desnecessária. Por que não guardar diretamente cinquenta por cento para zero e cinquenta por cento para um?"
+    },
+    {
+      "at": 112.59,
+      "fim": 129.47,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Porque amplitudes têm características que probabilidades comuns não têm. Elas podem ter sinais ou, de forma mais geral, fases diferentes. Quando uma operação combina amplitudes, algumas contribuições se reforçam e outras se cancelam."
+    },
+    {
+      "at": 130.17,
+      "fim": 136.22,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Mas uma chance negativa não faz sentido. Não existe menos vinte por cento de chance de sair um."
+    },
+    {
+      "at": 136.92,
+      "fim": 153.25,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Correto, e nenhuma probabilidade fica negativa. O sinal pertence à amplitude antes do cálculo da probabilidade. Ele pode ficar escondido numa medição direta e aparecer depois, quando provocamos interferência."
+    },
+    {
+      "at": 153.95,
+      "fim": 163.82,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Quero um experimento concreto. Como a gente cria uma dessas superposições sem dizer apenas que o qubit ficou meio zero e meio um?"
+    },
+    {
+      "at": 164.52,
+      "fim": 182.21,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "A gente começa com um qubit preparado em ket zero. Depois aplica a porta Hadamard, uma operação que distribui amplitude entre ket zero e ket um. Se repetirmos o preparo e medirmos logo depois, veremos aproximadamente metade de cada resultado."
+    },
+    {
+      "at": 182.91,
+      "fim": 192.26,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Então eu estava certo sobre a moeda. A Hadamard sorteia zero ou um, guarda o resultado e a medição revela o que ela sorteou."
+    },
+    {
+      "at": 192.96,
+      "fim": 211.13,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Essa hipótese combina com os resultados vistos até aqui. Se a gente observar apenas a medição após uma Hadamard, não consegue distinguir a superposição de um sorteio clássico. Agora precisamos deixar as duas explicações fazerem previsões diferentes."
+    },
+    {
+      "at": 211.83,
+      "fim": 226.53,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Imagino que outra Hadamard faça um segundo sorteio. Se o primeiro resultado já era aleatório, o final também deveria dar metade zero e metade um."
+    },
+    {
+      "at": 227.23,
+      "fim": 239.63,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Aqui vem a quebra da intuição. A gente não mede depois da primeira Hadamard: aplica uma segunda Hadamard e só então mede. Num aparelho ideal, o resultado final é sempre zero."
+    },
+    {
+      "at": 240.33,
+      "fim": 251.18,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Sempre zero? Duas operações que parecem produzir aleatoriedade acabam desfazendo uma à outra. Isso não aconteceria com dois lançamentos comuns de moeda."
+    },
+    {
+      "at": 251.88,
+      "fim": 266.34,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Exatamente. Depois da primeira Hadamard, não havia um zero ou um clássico já sorteado e escondido. Havia amplitudes coerentes que a segunda Hadamard pôde recombinar."
+    },
+    {
+      "at": 267.04,
+      "fim": 273.85,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Mas como essa recombinação escolhe o zero? Parece que o qubit volta no tempo e apaga o primeiro resultado."
+    },
+    {
+      "at": 274.55,
+      "fim": 296.84,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Nenhum resultado intermediário foi registrado, então não há resultado para apagar. Na segunda Hadamard, as contribuições que levariam a ket um chegam com sinais opostos e se cancelam. As contribuições para ket zero se reforçam."
+    },
+    {
+      "at": 297.54,
+      "fim": 308.27,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Se as amplitudes de um se cancelam, a probabilidade de um vira zero. E se as de zero se reforçam, a probabilidade de zero vira cem por cento."
+    },
+    {
+      "at": 308.97,
+      "fim": 322.07,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Isso. A probabilidade só é calculada depois de somarmos todas as amplitudes que contribuem para o mesmo resultado. Somar probabilidades cedo demais destruiria justamente o efeito de interferência."
+    },
+    {
+      "at": 322.77,
+      "fim": 329.45,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "E se eu medir entre as duas portas? A primeira medição deveria apenas confirmar o valor que estava ali."
+    },
+    {
+      "at": 330.15,
+      "fim": 350.21,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Se houver uma medição no meio, ela registra zero ou um e elimina a coerência necessária para esse experimento. A segunda Hadamard então age sobre o estado registrado. Repetindo tudo muitas vezes, a medição final volta a dar aproximadamente metade zero e metade um."
+    },
+    {
+      "at": 350.91,
+      "fim": 361.62,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Então olhar muda o resultado porque a mente humana interfere no qubit. Se ninguém ler o visor, talvez a superposição continue intacta."
+    },
+    {
+      "at": 362.32,
+      "fim": 378.01,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Não é a consciência que importa. A medição é uma interação física que correlaciona o qubit com um aparelho ou com o ambiente. Mesmo que ninguém consulte o registro, essa informação física pode impedir a interferência observada antes."
+    },
+    {
+      "at": 378.71,
+      "fim": 392.2,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Ainda parece que toda superposição equilibrada é igual. Se duas delas dão cinquenta por cento de zero e cinquenta por cento de um, o que poderia distingui-las?"
+    },
+    {
+      "at": 392.9,
+      "fim": 409.06,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Considere o estado mais e o estado menos. Os dois têm amplitudes de mesmo tamanho para zero e um, por isso dão as mesmas probabilidades numa medição direta. A diferença é o sinal relativo entre essas amplitudes."
+    },
+    {
+      "at": 409.76,
+      "fim": 420.19,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Se esse sinal não aparece na medição, ele parece apenas uma escolha de escrita. Talvez estado mais e estado menos sejam fisicamente idênticos."
+    },
+    {
+      "at": 420.89,
+      "fim": 436.33,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "A porta Hadamard revela a diferença. Ela transforma o estado mais em ket zero e o estado menos em ket um. Uma relação invisível na primeira medição se torna uma distinção certa depois que as amplitudes interferem."
+    },
+    {
+      "at": 437.03,
+      "fim": 449.11,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Então amplitude contém mais informação operacional do que probabilidade. Ela indica tanto o peso de cada possibilidade quanto a maneira como essas possibilidades podem se combinar."
+    },
+    {
+      "at": 449.81,
+      "fim": 468.4,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Perfeito. Só vale evitar outra conclusão apressada: isso não significa que um computador quântico testa todas as respostas e depois deixa a gente ler qualquer uma. Um algoritmo útil organiza amplitudes e fases para favorecer informações específicas na medição final."
+    },
+    {
+      "at": 469.1,
+      "fim": 481.87,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "E um único qubit também não entrega todas as amplitudes quando é medido. Para investigar um estado desconhecido, seria preciso preparar muitas cópias e escolher diferentes medições."
+    },
+    {
+      "at": 482.57,
+      "fim": 506.07,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "É isso. Superposição é a capacidade de combinar amplitudes, e a Hadamard mostra como criar, recombinar e revelar essa estrutura por interferência. No próximo passo do site, você vai manipular essas amplitudes e observar como diferentes portas mudam as probabilidades de medição."
+    }
+  ]
+}

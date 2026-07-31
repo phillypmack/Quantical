@@ -30,6 +30,14 @@ export function EpisodePlayer({ episode }: { episode: AudioEpisode }) {
   const progressoId = `audio/${episode.id}`;
   const ouvido = completed.includes(progressoId);
   const marcado = useRef(ouvido);
+  /**
+   * Posição pedida antes de o áudio estar pronto para buscar.
+   *
+   * Atribuir `currentTime` com readyState 0 é ignorado em silêncio pelo
+   * navegador — e clicar numa fala da transcrição assim que a página abre é
+   * exatamente quando isso acontece. Fica pendente até o loadedmetadata.
+   */
+  const buscaPendente = useRef<number | null>(null);
 
   const turnoAtual = episode.turnos.findLastIndex((turno) => tempo >= turno.at);
 
@@ -66,9 +74,6 @@ export function EpisodePlayer({ episode }: { episode: AudioEpisode }) {
     };
   }, [completeLesson, progressoId, episode.duracao]);
 
-  // Posição pedida antes de o áudio estar pronto para buscar.
-  const buscaPendente = useRef<number | null>(null);
-
   const irPara = useCallback(
     (segundos: number) => {
       const audio = audioRef.current;
@@ -77,9 +82,6 @@ export function EpisodePlayer({ episode }: { episode: AudioEpisode }) {
       const limite = Number.isFinite(audio.duration) ? audio.duration : episode.duracao;
       const alvo = Math.max(0, Math.min(limite, segundos));
 
-      // Atribuir currentTime antes de os metadados chegarem é ignorado pelo
-      // navegador em silêncio — e clicar numa fala logo que a página abre é
-      // exatamente quando isso acontece. Guarda e aplica no loadedmetadata.
       if (audio.readyState === 0) {
         buscaPendente.current = alvo;
         audio.load();
