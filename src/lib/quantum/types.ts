@@ -10,44 +10,55 @@ export const MAX_QUBITS = 16;
 /** Acima disto o histograma vira dezenas de milhares de nós DOM. */
 export const HISTOGRAM_TOP_K = 16;
 
-export type GateName =
+/**
+ * Todas as portas do motor, como valor.
+ *
+ * O union era escrito à mão e não existia em tempo de execução, então nada
+ * podia conferir se a paleta do laboratório cobria o motor — e doze portas
+ * ficaram fora dela, alcançáveis só escrevendo código. Derivando o tipo desta
+ * lista, a fonte passa a ser uma só e o teste consegue percorrê-la.
+ */
+export const GATE_NAMES = [
   // Um qubit
-  | "I"
-  | "H"
-  | "X"
-  | "Y"
-  | "Z"
-  | "S"
-  | "SDG"
-  | "T"
-  | "TDG"
-  | "SX"
-  | "SXDG"
-  | "P"
-  | "U"
-  | "RX"
-  | "RY"
-  | "RZ"
+  "I",
+  "H",
+  "X",
+  "Y",
+  "Z",
+  "S",
+  "SDG",
+  "T",
+  "TDG",
+  "SX",
+  "SXDG",
+  "P",
+  "U",
+  "RX",
+  "RY",
+  "RZ",
   // Controladas
-  | "CNOT"
-  | "CY"
-  | "CZ"
-  | "CH"
-  | "CP"
-  | "CRX"
-  | "CRY"
-  | "CRZ"
-  | "CCX"
-  | "CCZ"
-  | "MCX"
-  | "MCZ"
+  "CNOT",
+  "CY",
+  "CZ",
+  "CH",
+  "CP",
+  "CRX",
+  "CRY",
+  "CRZ",
+  "CCX",
+  "CCZ",
+  "MCX",
+  "MCZ",
   // Dois qubits com núcleo próprio
-  | "SWAP"
-  | "ISWAP"
-  | "CSWAP"
+  "SWAP",
+  "ISWAP",
+  "CSWAP",
   // Estruturais
-  | "BARRIER"
-  | "MEASURE";
+  "BARRIER",
+  "MEASURE",
+] as const;
+
+export type GateName = (typeof GATE_NAMES)[number];
 
 export type Operation = {
   id: string;

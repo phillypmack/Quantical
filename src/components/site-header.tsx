@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ArrowUpRight, Menu } from "lucide-react";
 
 import { cn } from "@/lib/cn";
+import { HeaderSessao } from "./header-sessao";
 import { QuantumMark } from "./quantum-mark";
 
 const nav = [
@@ -35,9 +36,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="header-actions">
-          <Link className="text-link header-login" href="/entrar">
-            Entrar
-          </Link>
+          <HeaderSessao />
           <Link className="button button--dark button--small" href="/aprender">
             Começar
             <ArrowUpRight size={15} />

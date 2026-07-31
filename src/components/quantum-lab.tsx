@@ -21,6 +21,7 @@ import { parseQiskit } from "@/lib/quantum/parser";
 import { circuitHref, readCircuitFromHash } from "@/lib/quantum/permalink";
 import { circuitToQiskit } from "@/lib/quantum/qiskit";
 import { runSync, SimulationFailure, SimulatorClient } from "@/lib/quantum/simulator-client";
+import { GRUPOS, PALETA, montarOperacao, precisaDeAngulo } from "@/lib/quantum/palette";
 import { MAX_QUBITS, type Circuit, type GateName, type SimulationResult } from "@/lib/quantum/types";
 import { ResultPanel } from "./quantum/result-panel";
 import { CircuitDiagram } from "./quantum/circuit-diagram";
@@ -39,59 +40,14 @@ const initialCircuit: Circuit = {
   ],
 };
 
-const gates: { gate: GateName; label: string; group: string }[] = [
-  { gate: "H", label: "Hadamard", group: "Básicas" },
-  { gate: "X", label: "Pauli X", group: "Básicas" },
-  { gate: "Y", label: "Pauli Y", group: "Básicas" },
-  { gate: "Z", label: "Pauli Z", group: "Básicas" },
-  { gate: "S", label: "Fase S", group: "Fase" },
-  { gate: "SDG", label: "Fase S†", group: "Fase" },
-  { gate: "T", label: "Fase T", group: "Fase" },
-  { gate: "TDG", label: "Fase T†", group: "Fase" },
-  { gate: "P", label: "Fase λ", group: "Fase" },
-  { gate: "RX", label: "Rotação X", group: "Rotações" },
-  { gate: "RY", label: "Rotação Y", group: "Rotações" },
-  { gate: "RZ", label: "Rotação Z", group: "Rotações" },
-  { gate: "SX", label: "Raiz de X", group: "Rotações" },
-  { gate: "CNOT", label: "Controlada X", group: "Múltiplos" },
-  { gate: "CZ", label: "Controlada Z", group: "Múltiplos" },
-  { gate: "CP", label: "Fase controlada", group: "Múltiplos" },
-  { gate: "SWAP", label: "Troca", group: "Múltiplos" },
-  { gate: "CCX", label: "Toffoli", group: "Múltiplos" },
-  { gate: "CSWAP", label: "Fredkin", group: "Múltiplos" },
-];
+const gates = PALETA;
+const GROUPS = GRUPOS;
+const needsAngle = precisaDeAngulo;
 
-const GROUPS = ["Básicas", "Fase", "Rotações", "Múltiplos"];
-const PARAMETRIC: GateName[] = ["RX", "RY", "RZ", "P", "CP", "CRX", "CRY", "CRZ"];
-const needsAngle = (gate: GateName) => PARAMETRIC.includes(gate);
-
+/** Id estável o bastante para o React; a regra em si vive na paleta. */
 function makeOperation(gate: GateName, target: number, circuit: Circuit) {
   const id = `${gate.toLowerCase()}-${circuit.operations.length}-${Math.random().toString(36).slice(2, 6)}`;
-  const position = circuit.operations.length;
-  const others = Array.from({ length: circuit.qubits }, (_, index) => index).filter(
-    (qubit) => qubit !== target,
-  );
-
-  const base = { id, gate, position, ...(needsAngle(gate) ? { params: [Math.PI / 2] } : {}) };
-
-  if (gate === "CCX" || gate === "CSWAP") {
-    if (circuit.qubits < 3) throw new Error(`A porta ${gate} precisa de pelo menos 3 qubits.`);
-    return gate === "CCX"
-      ? { ...base, controls: others.slice(0, 2), targets: [target] }
-      : { ...base, controls: [others[0]], targets: [target, others[1]] };
-  }
-
-  if (["CNOT", "CZ", "CP", "CRX", "CRY", "CRZ"].includes(gate)) {
-    if (circuit.qubits < 2) throw new Error(`A porta ${gate} precisa de pelo menos 2 qubits.`);
-    return { ...base, controls: [others[0]], targets: [target] };
-  }
-
-  if (gate === "SWAP" || gate === "ISWAP") {
-    if (circuit.qubits < 2) throw new Error(`A porta ${gate} precisa de pelo menos 2 qubits.`);
-    return { ...base, targets: [target, others[0]] };
-  }
-
-  return { ...base, targets: [target] };
+  return montarOperacao(gate, target, circuit, id);
 }
 
 export function QuantumLab() {
@@ -267,6 +223,9 @@ export function QuantumLab() {
                 .filter((item) => item.group === group)
                 .map((item) => (
                   <button
+                    // Sem isto o nome acessível vira a sigla colada no rótulo
+                    // ("IIdentidade"), que é o que um leitor de tela anuncia.
+                    aria-label={`Adicionar ${item.label}`}
                     draggable
                     key={item.gate}
                     onClick={() => addGate(item.gate, 0)}

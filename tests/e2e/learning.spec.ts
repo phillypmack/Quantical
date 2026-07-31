@@ -485,16 +485,14 @@ test("com a API fora do ar, o site inteiro continua funcionando", async ({ page 
   await page.goto("/revisar");
   await expect(page.getByRole("heading", { name: /Nada vencido por hoje/i })).toBeVisible();
 
-  // E o mais importante: nada do que falhou virou erro visível para o aluno.
-  // O filtro por texto é necessário porque o Next mantém sempre um
-  // role="alert" vazio na página (o anunciador de rota).
-  await expect(page.getByRole("alert").filter({ hasText: /\S/ })).toHaveCount(0);
-
   // A API foi mesmo procurada e recusou conexão — o teste não passou por
   // nunca ter tocado nela. O envio é adiado de propósito para agrupar o lote,
   // então esperar aqui é parte do comportamento, não folga do teste.
   await expect.poll(() => chamadas.length, { timeout: 10_000 }).toBeGreaterThan(0);
 
+  // E o mais importante: nada do que falhou virou erro visível para o aluno.
+  // O filtro por texto é necessário porque o Next mantém sempre um
+  // role="alert" vazio na página (o anunciador de rota).
   await expect(page.getByRole("alert").filter({ hasText: /\S/ })).toHaveCount(0);
 });
 
@@ -597,4 +595,107 @@ test("o exercício mostra para onde ir, e a distância encolhe até zero", async
   await expect(distancia).toContainText("No alvo");
   // Chegou: o fantasma sai de cena em vez de ficar sobreposto à seta real.
   await expect(page.locator(".bloch-alvo")).toHaveCount(0);
+});
+
+/* ---------------------------------------------------------------------------
+   Defeitos corrigidos
+--------------------------------------------------------------------------- */
+
+test("o cabeçalho mostra quem está usando o site e permite sair", async ({ page }) => {
+  // Antes: o cabeçalho dizia "Entrar" para sempre, e `signOut` não aparecia
+  // uma vez sequer no projeto.
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "Entrar" })).toBeVisible();
+
+  await page.evaluate(() =>
+    window.localStorage.setItem(
+      "quantical:local-user",
+      JSON.stringify({ name: "Felipe", email: "felipe@exemplo.br" }),
+    ),
+  );
+  await page.reload();
+
+  const gatilho = page.getByRole("button", { name: /Felipe/ });
+  await expect(gatilho).toBeVisible();
+  await gatilho.click();
+  await page.getByRole("button", { name: /Sair/ }).click();
+
+  await expect(page.getByRole("link", { name: "Entrar" })).toBeVisible();
+  expect(await page.evaluate(() => window.localStorage.getItem("quantical:local-user"))).toBeNull();
+});
+
+test("dá para zerar o progresso, e a confirmação diz o que se perde", async ({ page }) => {
+  await page.goto("/curso/iniciante/bits-e-qubits/teoria");
+  await page.getByRole("button", { name: /indecisão do qubit é reversível/i }).click();
+  await page.getByRole("button", { name: /64%, porque a probabilidade/i }).click();
+  await page.getByRole("button", { name: /sinal permite que caminhos diferentes se cancelem/i }).click();
+  await page.getByRole("button", { name: /Verificar respostas/i }).click();
+
+  await page.goto("/progresso");
+  await expect(page.getByText("1", { exact: true }).first()).toBeVisible();
+
+  await page.getByRole("button", { name: /Zerar meu progresso/i }).click();
+  await expect(page.getByText(/Isto apaga 1 aula concluída/)).toBeVisible();
+
+  // Cancelar não pode apagar nada.
+  await page.getByRole("button", { name: "Cancelar" }).click();
+  await expect(page.getByRole("button", { name: /Zerar meu progresso/i })).toBeVisible();
+
+  await page.getByRole("button", { name: /Zerar meu progresso/i }).click();
+  await page.getByRole("button", { name: /Zerar mesmo assim/i }).click();
+
+  // Sem nada concluído, o botão some junto.
+  await expect(page.getByRole("button", { name: /Zerar meu progresso/i })).toHaveCount(0);
+  expect(
+    await page.evaluate(() => {
+      const bruto = window.localStorage.getItem("quantical:progress:v2");
+      return bruto ? JSON.parse(bruto).completed.length : -1;
+    }),
+  ).toBe(0);
+});
+
+test("as portas que faltavam na paleta estão alcançáveis sem escrever código", async ({ page }) => {
+  await page.goto("/laboratorio");
+  // Doze portas do motor não apareciam na tela.
+  for (const rotulo of [
+    "Identidade",
+    "Raiz de X†",
+    "Universal U(θ,φ,λ)",
+    "Controlada Y",
+    "Controlada H",
+    "Rotação X controlada",
+    "Z duplamente controlada",
+    "Troca com i",
+    "X multicontrolada",
+    "Z multicontrolada",
+  ]) {
+    await expect(
+      page.getByRole("button", { name: `Adicionar ${rotulo}`, exact: true }),
+      rotulo,
+    ).toHaveCount(1);
+  }
+
+  // E aplicá-las funciona de verdade, não só aparece.
+  await page.getByRole("button", { name: "Adicionar Universal U(θ,φ,λ)", exact: true }).click();
+  await page.getByRole("button", { name: "Executar" }).click();
+  // O anunciador de rota do Next é um role="alert" sempre presente e vazio.
+  await expect(page.getByRole("alert").filter({ hasText: /\S/ })).toHaveCount(0);
+  await expect(page.getByText(/Passo 3 de 3/)).toBeVisible();
+});
+
+test("cada estágio de uma aula tem título e canonical próprios", async ({ page }) => {
+  // Antes: 54 páginas com 18 títulos e nenhum canonical.
+  const vistos = new Set<string>();
+  for (const estagio of ["teoria", "experimento", "desafio"]) {
+    await page.goto(`/curso/iniciante/bits-e-qubits/${estagio}`);
+    const titulo = await page.title();
+    expect(vistos.has(titulo), `título repetido: ${titulo}`).toBe(false);
+    vistos.add(titulo);
+
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      new RegExp(`/curso/iniciante/bits-e-qubits/${estagio}$`),
+    );
+    await expect(page.locator('meta[property="og:title"]')).toHaveCount(1);
+  }
 });

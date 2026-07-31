@@ -17,6 +17,7 @@ import { getAllLessons, getModuleLessons, totalLessons, tracks } from "@/data/cu
 import { consolidados } from "@/lib/revisao/agenda";
 import { PerfilEquivocos } from "./perfil-equivocos";
 import { AvisoDeRevisao } from "./revisao-sessao";
+import { ZerarProgresso } from "./zerar-progresso";
 import { useProgress } from "./progress-provider";
 
 const achievementList = [
@@ -44,6 +45,7 @@ export function ProgressDashboard() {
           <p className="eyebrow">Seu observatório</p>
           <h1>Continue de onde<br />sua curiosidade parou.</h1>
           <p>Seu progresso é salvo automaticamente neste dispositivo.</p>
+          <ZerarProgresso />
         </div>
         <div className="streak-orbit">
           <Flame size={24} />

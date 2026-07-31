@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 
+import { GATES_ESTRUTURAIS, GRUPOS, PALETA, montarOperacao } from "./palette";
 import { mulberry32 } from "./rng";
 import { sampleCounts, simulateCircuit } from "./simulator";
-import type { Circuit, GateName, Operation } from "./types";
+import { GATE_NAMES, type Circuit, type GateName, type Operation } from "./types";
 
 let counter = 0;
 const op = (gate: GateName, targets: number[], extra: Partial<Operation> = {}): Operation => ({
@@ -193,5 +194,51 @@ describe("portas de um qubit acrescentadas", () => {
     const result = run(1, [op("H", [0]), op("I", [0]), op("BARRIER", [0])]);
     expect(result.probabilities[0]).toBeCloseTo(0.5, 10);
     expect(result.probabilities[1]).toBeCloseTo(0.5, 10);
+  });
+});
+
+describe("a paleta do laboratório cobre o motor", () => {
+  /**
+   * Os dados das portas viviam em quatro fontes que saíram de sincronia: o
+   * union de tipos, a paleta visual, as strings dos desafios e a prosa do
+   * README. Doze portas do motor não estavam na paleta e só eram alcançáveis
+   * escrevendo código à mão.
+   */
+  it("toda porta do motor está na paleta, exceto as estruturais", () => {
+    const naPaleta = new Set(PALETA.map((item) => item.gate));
+    const faltando = GATE_NAMES.filter(
+      (gate) => !naPaleta.has(gate) && !GATES_ESTRUTURAIS.includes(gate),
+    );
+    expect(faltando, `fora da paleta: ${faltando.join(", ")}`).toEqual([]);
+  });
+
+  it("toda porta da paleta o motor consegue de fato executar", () => {
+    // Não basta existir no union: um item de paleta que o simulador recusa
+    // vira um botão que dá erro na cara do aluno.
+    for (const item of PALETA) {
+      const vazio: Circuit = { qubits: 3, shots: 64, seed: 7, operations: [] };
+      const operacao = montarOperacao(item.gate, 0, vazio, `t-${item.gate}`);
+      const resultado = simulateCircuit({ ...vazio, operations: [operacao] });
+
+      const soma = resultado.probabilities.reduce((total, p) => total + p, 0);
+      expect(soma, item.gate).toBeCloseTo(1, 6);
+      expect(resultado.probabilities.every(Number.isFinite), item.gate).toBe(true);
+    }
+  });
+
+  it("U recebe os três parâmetros que exige, não um só", () => {
+    const vazio: Circuit = { qubits: 1, shots: 64, seed: 7, operations: [] };
+    expect(montarOperacao("U", 0, vazio, "u").params).toHaveLength(3);
+    expect(montarOperacao("RX", 0, vazio, "rx").params).toHaveLength(1);
+    expect(montarOperacao("H", 0, vazio, "h").params).toBeUndefined();
+  });
+
+  it("cada porta da paleta pertence a um grupo que existe", () => {
+    for (const item of PALETA) expect(GRUPOS, item.gate).toContain(item.group);
+  });
+
+  it("os rótulos são únicos: dois botões iguais na tela seriam ambíguos", () => {
+    const rotulos = PALETA.map((item) => item.label);
+    expect(new Set(rotulos).size).toBe(rotulos.length);
   });
 });

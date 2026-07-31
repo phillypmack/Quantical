@@ -10,8 +10,6 @@ export type HistogramBar = {
   probability: number;
   /** Fração observada nos shots. Ausente no modo teórico. */
   sampled?: number;
-  /** Palpite do aluno, desenhado como barra-fantasma atrás da real. */
-  predicted?: number;
 };
 
 type HistogramProps = {

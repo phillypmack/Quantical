@@ -9,8 +9,11 @@ import {
   getModuleLessons,
   getNextLesson,
   getTrack,
+  lessonStages,
   tracks,
 } from "@/data/curriculum";
+import { getLesson } from "@/data/lessons";
+import { SITE_NAME } from "@/lib/site";
 
 type LessonPageProps = {
   params: Promise<{ track: string; module: string; lesson: string }>;
@@ -28,12 +31,48 @@ export function generateStaticParams() {
   );
 }
 
+/**
+ * As 54 aulas tinham 18 títulos distintos — os três estágios de um módulo
+ * compartilhavam o mesmo `<title>` e nenhuma delas declarava canonical nem
+ * Open Graph. Para um buscador, 54 páginas com título repetido são páginas
+ * competindo entre si; para um link compartilhado, era um cartão em branco.
+ *
+ * A aula escrita, quando existe, tem título e resumo próprios — usá-los é o
+ * que dá 54 títulos de verdade em vez de 18.
+ */
 export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
   const values = await params;
   const courseModule = getModule(values.track, values.module);
+  const track = getTrack(values.track);
+  const lessonId = getLessonId(values.track, values.module, values.lesson);
+  const lesson = getLesson(lessonId);
+  const estagio = lessonStages.find((item) => item.id === values.lesson);
+
+  const titulo = lesson
+    ? `${lesson.title} — ${estagio?.label ?? "Aula"}`
+    : `${courseModule?.title ?? "Aula"} — ${estagio?.label ?? "Aula"}`;
+
+  const descricao =
+    lesson?.summary ??
+    (courseModule && estagio
+      ? `${estagio.label} do módulo ${courseModule.title}: ${courseModule.description}`
+      : undefined);
+
+  const url = `/curso/${values.track}/${values.module}/${values.lesson}`;
+
   return {
-    title: courseModule ? `${courseModule.title} — Aula` : "Aula",
-    description: courseModule?.description,
+    title: titulo,
+    description: descricao,
+    alternates: { canonical: url },
+    openGraph: {
+      title: titulo,
+      description: descricao,
+      url,
+      type: "article",
+      siteName: SITE_NAME,
+      locale: "pt_BR",
+    },
+    other: track ? { "article:section": track.title } : undefined,
   };
 }
 

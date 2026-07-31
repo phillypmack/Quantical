@@ -20,20 +20,17 @@ import {
 import type { Tentativa, TipoTentativa } from "@/lib/revisao/types";
 import * as store from "@/lib/progress/store";
 import { synchronize } from "@/lib/progress/sync";
-import type { ProgressState, SavedProject, SyncStatus } from "@/lib/progress/types";
+import type { ProgressState, SavedProject } from "@/lib/progress/types";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 export type { SavedProject } from "@/lib/progress/types";
 
 type ProgressContextValue = ProgressState & {
   hydrated: boolean;
-  syncStatus: SyncStatus;
-  syncError?: string;
   completeLesson: (id: string, score?: number) => void;
   saveProject: (project: { id?: string; title: string; code: string; circuit?: SavedProject["circuit"] }) => string;
   removeProject: (id: string) => void;
   resetProgress: () => void;
-  setUnlockOverride: (moduleId: string) => void;
   registrarTentativa: (tentativa: NovaTentativa) => void;
 };
 
@@ -125,14 +122,6 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const setUnlockOverride = useCallback((moduleId: string) => {
-    store.update((current) =>
-      current.unlockedOverrides.includes(moduleId)
-        ? current
-        : { ...current, unlockedOverrides: [...current.unlockedOverrides, moduleId] },
-    );
-  }, []);
-
   // Sobe as tentativas pendentes para a API — depois de gravá-las localmente,
   // nunca antes. O aluno já pode seguir estudando enquanto isto acontece, e se
   // falhar não acontece nada: a tentativa continua marcada como pendente e vai
@@ -221,24 +210,13 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
     () => ({
       ...snapshot.state,
       hydrated: snapshot.hydrated,
-      syncStatus: snapshot.syncStatus,
-      syncError: snapshot.syncError,
       completeLesson,
       saveProject,
       removeProject,
       resetProgress,
-      setUnlockOverride,
       registrarTentativa,
     }),
-    [
-      snapshot,
-      completeLesson,
-      saveProject,
-      removeProject,
-      resetProgress,
-      setUnlockOverride,
-      registrarTentativa,
-    ],
+    [snapshot, completeLesson, saveProject, removeProject, resetProgress, registrarTentativa],
   );
 
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;

@@ -21,7 +21,7 @@ export type Track = {
   modules: Module[];
 };
 
-const lessonStages = [
+export const lessonStages = [
   { id: "teoria", label: "Conceito", suffix: "entender" },
   { id: "experimento", label: "Experimento", suffix: "experimentar" },
   { id: "desafio", label: "Desafio", suffix: "construir" },
