@@ -17,6 +17,15 @@ import type { Revisao, Tentativa } from "./types";
 export const INTERVALOS = [1, 3, 7, 16, 35, 90] as const;
 export const FORCA_MAXIMA = INTERVALOS.length - 1;
 
+/**
+ * A partir daqui o conceito conta como firme.
+ *
+ * Força 3 significa três acertos com espaçamento crescente — o último depois
+ * de uma semana sem ver o assunto. Acertar na mesma sessão em que se leu a
+ * explicação mede memória curta, não mudança de intuição.
+ */
+export const FORCA_FIRME = 3;
+
 export function somarDias(data: string, dias: number): string {
   const base = Date.parse(`${data}T12:00:00Z`);
   return new Date(base + dias * 86_400_000).toISOString().slice(0, 10);
@@ -94,5 +103,5 @@ export function diasAte(revisao: Revisao, hoje: string = studyDate()): number {
  * Serve para o painel mostrar progresso real, e não só aulas concluídas.
  */
 export function consolidados(agenda: Record<string, Revisao>): Revisao[] {
-  return Object.values(agenda).filter((revisao) => revisao.forca >= 3);
+  return Object.values(agenda).filter((revisao) => revisao.forca >= FORCA_FIRME);
 }

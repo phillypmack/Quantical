@@ -15,6 +15,7 @@ import {
 
 import { getAllLessons, getModuleLessons, totalLessons, tracks } from "@/data/curriculum";
 import { consolidados } from "@/lib/revisao/agenda";
+import { PerfilEquivocos } from "./perfil-equivocos";
 import { AvisoDeRevisao } from "./revisao-sessao";
 import { useProgress } from "./progress-provider";
 
@@ -101,6 +102,8 @@ export function ProgressDashboard() {
           })}
         </div>
       </section>
+
+      <PerfilEquivocos />
 
       <section className="dashboard-section">
         <div className="dashboard-section-heading">

@@ -412,3 +412,32 @@ test("a sessão de revisão não tem violações graves de acessibilidade", asyn
   );
   expect(blocking, blocking.map((item) => item.id).join(", ")).toEqual([]);
 });
+
+test("o painel nomeia o pensamento por trás do erro e oferece a demolição", async ({ page }) => {
+  // O aluno escolhe, nas duas aulas, alternativas marcadas com o mesmo
+  // equívoco: confundir amplitude com probabilidade.
+  await page.goto("/curso/iniciante/bits-e-qubits/teoria");
+  await page.getByRole("button", { name: /indecisão do qubit é reversível/i }).click();
+  await page.getByRole("button", { name: /80%, porque β = 0,8/i }).click();
+  await page.getByRole("button", { name: /probabilidade negativa/i }).click();
+  await page.getByRole("button", { name: /Verificar respostas/i }).click();
+  await expect(page.getByText("1 de 3 · 33%")).toBeVisible();
+
+  await page.goto("/progresso");
+
+  await expect(page.getByRole("heading", { name: /Como sua intuição erra/i })).toBeVisible();
+  const cartao = page.locator(".equivoco-grid article").filter({
+    hasText: /Amplitude e probabilidade são a mesma coisa/i,
+  });
+  await expect(cartao).toBeVisible();
+  await expect(cartao).toContainText("Apareceu 2 vezes");
+
+  // O experimento que derruba já existe: o cartão precisa levar até ele.
+  await cartao.getByRole("link", { name: /Refazer o experimento/i }).click();
+  await expect(page).toHaveURL(/\/curso\/iniciante\/superposicao\/teoria/);
+});
+
+test("sem erro registrado, o painel não inventa diagnóstico", async ({ page }) => {
+  await page.goto("/progresso");
+  await expect(page.getByRole("heading", { name: /Como sua intuição erra/i })).toHaveCount(0);
+});

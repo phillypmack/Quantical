@@ -4026,3 +4026,96 @@ summary {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Perfil de equívocos
+
+   Um cartão por pensamento nomeado. O tom é de espelho, não de boletim: o
+   estado "superado" existe justamente para a seção não virar uma lista
+   crescente de defeitos.
+--------------------------------------------------------------------------- */
+.equivocos-placar {
+  margin: 0;
+  color: var(--green);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.equivoco-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+}
+
+.equivoco-grid article {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--orange);
+  border-radius: 14px;
+  background: var(--paper-bright);
+}
+
+.equivoco-grid article.is-superado {
+  border-left-color: var(--green);
+  background: rgba(33, 120, 93, 0.05);
+}
+
+.equivoco-grid header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.equivoco-grid header svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--orange);
+}
+
+.equivoco-grid article.is-superado header svg { color: var(--green); }
+
+.equivoco-grid h3 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+.equivoco-grid p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.equivoco-grid footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.equivoco-grid footer span {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+}
+
+.equivoco-grid footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--violet);
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.equivoco-grid footer a:hover { text-decoration: underline; }
+
+@media (max-width: 640px) {
+  .equivoco-grid { grid-template-columns: 1fr; }
+}

@@ -138,7 +138,8 @@ export function GuidedExperiment({
   };
 
   return (
-    <section className="guided" aria-label={`Experimento guiado: ${title}`}>
+    // O id é o alvo do link "refazer o experimento" no perfil de equívocos.
+    <section className="guided" aria-label={`Experimento guiado: ${title}`} id="experimento">
       <header className="guided-header">
         <div>
           <span className="guided-eyebrow">Experimento guiado</span>
