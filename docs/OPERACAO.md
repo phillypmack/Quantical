@@ -73,15 +73,37 @@ que é o cenário real de uma restauração às pressas.
 
 ---
 
-# Problemas do servidor e como corrigi-los
+# Problemas do servidor
 
-Os scripts vivem em [`deploy/vps/`](../deploy/vps/) e são **numerados na ordem
-em que devem rodar**. Todos são idempotentes e trazem o rollback impresso ao
-final.
+Todos corrigidos em 31/07/2026. Os scripts vivem em
+[`deploy/vps/`](../deploy/vps/), **numerados na ordem em que rodaram**. São
+idempotentes e imprimem o rollback ao final.
 
-## 1. `docker stop` não funciona em container nenhum — CAUSA RAIZ ENCONTRADA
+## Verificação contínua
 
-**Estado: diagnosticado, corrigido e validado; falta aplicar.**
+```bash
+ssh root@187.77.8.195 /usr/local/sbin/verifica-invariantes.sh
+```
+
+Doze invariantes, rodando também por cron às 6h10 em
+`/var/log/vps-invariantes.log`. Sai 1 e diz o que regrediu se: o perfil sumir
+do disco ou sair de *enforce*, a regra de sinal desaparecer, **o template do
+dockerd mudar e o perfil congelado ficar defasado** (o caso mais escorregadio,
+que acontece calado depois de um refresh do snap), aparecerem negações novas,
+o `docker.service` deixar de estar mascarado, alguma regra de DROP sumir da
+`DOCKER-USER`, ou algum banco voltar a publicar em `0.0.0.0`.
+
+O timer do snap passou de `00:00~24:00/4` (quatro refreshes por dia, a
+qualquer hora) para **domingo 03:00–05:00**. Um refresh do snap docker
+reinicia o daemon e, com ele, os 17 containers dos 8 projetos — melhor que
+isso aconteça numa madrugada previsível do que numa terça às 14h.
+
+## 1. `docker stop` não funciona em container nenhum — CORRIGIDO
+
+**Estado: aplicado em 31/07/2026 17:59 UTC e verificado.** `docker stop` e
+`docker start` funcionaram em `quantical-api`, e um SIGCONT (inócuo num
+processo que já roda, mas exerce o caminho de sinal) passou nos **17**
+containers. Zero negações desde então.
 
 O sintoma: `docker stop <qualquer container>` responde `permission denied`,
 em qualquer projeto do servidor. Foram 181 negações nos últimos 7 dias.
@@ -130,7 +152,7 @@ virou `unconfined` e o bloco do snap **não foi emitido**. O perfil em kernel
 simplesmente não autoriza receber sinal de `snap.docker.dockerd` — que é
 justamente quem manda os sinais.
 
-### A correção
+### A correção (já aplicada)
 
 Materializar o perfil em `/etc/apparmor.d/docker-default`, renderizado do
 template do binário **do snap**, com os valores certos.
@@ -189,10 +211,10 @@ E o alívio imediato, se algo inesperado aparecer:
 — para de negar na hora, sem descarregar nada. É paliativo de minutos, não
 estado estável: um reboot ou um `systemctl reload apparmor` volta a *enforce*.
 
-### 1b. Depois: acabar com a corrida de boot
+### 1b. A corrida de boot — CORRIGIDA
 
 ```bash
-./deploy/vps/04-mask-docker-deb.sh
+./deploy/vps/04-mask-docker-deb.sh   # aplicado em 31/07/2026
 ```
 
 `systemctl mask docker.service docker.socket` impede o daemon do `.deb` de
@@ -271,11 +293,17 @@ O script corrigiu três defeitos do mecanismo que já existia:
    corrige.
 3. A cadeia `DOCKER-USER` do `ip6tables` estava vazia.
 
-Depois que o problema 1 estiver aplicado, vale a defesa em profundidade:
+E a defesa em profundidade, aplicada depois que o problema 1 destravou a
+recriação de containers:
 
 ```bash
-./deploy/vps/05-donalia-loopback.sh   # muda o compose para 127.0.0.1:5433
+./deploy/vps/05-donalia-loopback.sh   # aplicado em 31/07/2026
 ```
+
+O compose passou a declarar `127.0.0.1:5433:5432`, o container foi recriado e
+o app reconectou (DNS interno resolve `postgres` para 172.23.0.3, resposta 307
+do NextAuth em 0,45 s). A porta deixou de ser publicada, em vez de ser
+publicada e bloqueada: se um dia a regra de firewall sumir, ela não reabre.
 
 ### Ainda em aberto na dona-lia (não é projeto meu, mas é sério)
 
@@ -288,11 +316,16 @@ Depois que o problema 1 estiver aplicado, vale a defesa em profundidade:
   (`${NEXTAUTH_SECRET:-dona-lia-secret-change-me}`). Fechar a porta hoje
   derruba o acesso: o caminho é criar um vhost com TLS primeiro.
 
-## 3. Sete dos oito projetos não têm backup de banco
+## 3. Backup dos bancos — PARCIALMENTE RESOLVIDO
 
-Só o quantical tem (e o cron dele ainda não rodou). O chess2 tem um dump
-órfão de 28/07, sem script que o regenere. **warzil, tablegames, donalia,
-container-loader, chaveirogo e baseline-tennis não têm nenhuma cópia.**
+Antes, só o quantical tinha (e o cron dele ainda não havia rodado). Em
+31/07/2026 os seis bancos pequenos foram salvos em
+`/var/backups/vps-20260731-175927/`, cada um validado com `pg_restore -l`:
+quantical, chess2, tablegames, dona_lia_estoque, container_loader e
+chaveirogo — 552 KB no total.
+
+**O warzil (17 GB) continua sem backup**, e é o único que realmente tem
+volume de dados.
 
 ```bash
 ./deploy/vps/02-backup-bancos.sh                 # os seis pequenos (~65 MB)
