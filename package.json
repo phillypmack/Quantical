@@ -7,6 +7,8 @@
     "build": "next build && node scripts/flatten-rsc.mjs out && node scripts/prepare-dist.mjs",
     "start": "node scripts/serve-static.mjs",
     "lint": "eslint .",
+    "content:status": "node scripts/content-status.mjs",
+    "audio:import": "node scripts/import-audio.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test"

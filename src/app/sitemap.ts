@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 
+import { episodios, slugDoEpisodio } from "@/data/audio";
 import { challenges } from "@/data/challenges";
 import { getAllLessons } from "@/data/curriculum";
 import { SITE_URL } from "@/lib/site";
@@ -13,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/aprender", priority: 0.9 },
     { path: "/laboratorio", priority: 0.9 },
     { path: "/desafios", priority: 0.8 },
+    { path: "/audio", priority: 0.8 },
     { path: "/glossario", priority: 0.7 },
     { path: "/projetos", priority: 0.4 },
     { path: "/progresso", priority: 0.4 },
@@ -34,6 +36,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${SITE_URL}/desafios/${challenge.id}`,
       changeFrequency: "monthly" as const,
       priority: 0.6,
+    })),
+    // Cada episódio publica a transcrição inteira em HTML — é conteúdo real em
+    // português num assunto onde quase não existe.
+    ...episodios.map((episodio) => ({
+      url: `${SITE_URL}/audio/${slugDoEpisodio(episodio.id)}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
     })),
   ];
 }

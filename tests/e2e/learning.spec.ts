@@ -162,6 +162,44 @@ test("permalink abre o laboratório com o circuito já montado", async ({ page, 
   await expect(page.locator(".circuit-row")).toHaveCount(3);
 });
 
+test("o episódio toca e a transcrição navega o áudio", async ({ page }) => {
+  await page.goto("/audio");
+
+  const primeiro = page.locator(".audio-card a").first();
+  if ((await primeiro.count()) === 0) {
+    test.skip(true, "nenhum episódio publicado ainda");
+    return;
+  }
+  await primeiro.click();
+
+  await expect(page.getByRole("button", { name: "Tocar episódio" })).toBeVisible();
+
+  // Clicar numa fala da transcrição precisa posicionar o áudio.
+  const falas = page.locator(".episode-turno button");
+  await falas.nth(3).click();
+  const posicao = await page.locator("audio").evaluate((el: HTMLAudioElement) => el.currentTime);
+  expect(posicao).toBeGreaterThan(0);
+
+  // E a fala clicada precisa acender.
+  await expect(page.locator(".episode-turno.is-atual")).toHaveCount(1);
+});
+
+test("a transcrição do episódio é HTML de verdade, não só legenda do áudio", async ({ page }) => {
+  await page.goto("/audio");
+  const primeiro = page.locator(".audio-card a").first();
+  if ((await primeiro.count()) === 0) {
+    test.skip(true, "nenhum episódio publicado ainda");
+    return;
+  }
+  await primeiro.click();
+
+  // É o que torna o episódio indexável em português — e a alternativa
+  // acessível para quem não vai ouvir.
+  const falas = page.locator(".episode-turno p");
+  expect(await falas.count()).toBeGreaterThanOrEqual(20);
+  expect((await falas.first().textContent())?.length ?? 0).toBeGreaterThan(20);
+});
+
 test("páginas principais não criam rolagem horizontal no celular", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   for (const path of [
@@ -211,6 +249,7 @@ test("as rotas principais não têm violações graves de acessibilidade", async
     "/progresso",
     "/projetos",
     "/entrar",
+    "/audio",
     "/curso/iniciante/bits-e-qubits/teoria",
   ]) {
     await page.goto(path);

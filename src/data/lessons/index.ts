@@ -1,4 +1,5 @@
 import { bitsEQubits } from "./iniciante/bits-e-qubits";
+import { superposicao } from "./iniciante/superposicao";
 import type { Lesson } from "./types";
 
 export type { Block, Lesson, Question, QuestionOption, StageId } from "./types";
@@ -11,7 +12,7 @@ export type { Block, Lesson, Question, QuestionOption, StageId } from "./types";
  * cai no formato genérico — assim a autoria pode avançar módulo a módulo sem
  * quebrar as 54 rotas que já existem.
  */
-export const lessons: Lesson[] = [...bitsEQubits];
+export const lessons: Lesson[] = [...bitsEQubits, ...superposicao];
 
 export const lessonsById = new Map(lessons.map((lesson) => [lesson.id, lesson]));
 

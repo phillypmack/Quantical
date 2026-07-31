@@ -493,3 +493,151 @@
   .angle-editors label { grid-template-columns: 62px 1fr 48px; }
   .prediction-bars label { grid-template-columns: 52px 1fr 40px; }
 }
+
+/* =====================================================================
+   Quantical em Áudio — tocador de episódio e transcrição.
+   ===================================================================== */
+
+.audio-section { padding-block: 40px 90px; }
+.audio-resumo { display: flex; gap: 32px; flex-wrap: wrap; margin-bottom: 34px; }
+.audio-resumo div { display: flex; align-items: center; gap: 10px; color: var(--ink-soft); }
+.audio-resumo strong { color: var(--ink); }
+.audio-vazio { color: var(--ink-soft); padding: 40px 0; }
+
+.audio-grid {
+  display: grid; gap: 18px; list-style: none; padding: 0; margin: 0;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+.audio-card {
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 24px; background: var(--paper-bright);
+  border: 1px solid var(--line); border-radius: var(--radius);
+}
+.audio-card-numero { font-family: Georgia, serif; font-size: 26px; line-height: 1; }
+.audio-card small {
+  display: block; font-size: 0.68rem; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--ink-soft); margin-bottom: 6px;
+}
+.audio-card h2 { margin: 0 0 8px; font-size: 1.2rem; }
+.audio-card p { margin: 0; font-size: 0.88rem; color: var(--ink-soft); line-height: 1.6; }
+.audio-card footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: auto; padding-top: 8px;
+}
+.audio-card footer span { font-size: 0.78rem; color: var(--ink-soft); }
+.audio-card footer a {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.86rem; font-weight: 600; color: var(--violet);
+}
+
+/* --- Tocador --- */
+.episode-page { padding-block: 40px 80px; display: flex; flex-direction: column; gap: 24px; }
+.episode-player {
+  display: flex; flex-direction: column; gap: 20px;
+  padding: 28px; background: var(--paper-bright);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+/* O elemento fica no DOM (é a fonte da verdade), mas os controles são nossos. */
+.episode-audio { display: none; }
+
+.episode-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.episode-eyebrow {
+  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em;
+  font-weight: 700; color: var(--violet);
+}
+.episode-head h2 { margin: 6px 0 8px; font-size: 1.5rem; }
+.episode-head p { margin: 0; color: var(--ink-soft); line-height: 1.6; }
+.episode-ouvido {
+  flex-shrink: 0; font-size: 0.7rem; font-weight: 700; color: var(--green);
+  background: rgba(33, 120, 93, 0.1); padding: 5px 11px; border-radius: 999px;
+}
+.episode-erro { color: var(--orange); background: var(--orange-pale); padding: 12px 16px; border-radius: 11px; }
+
+.episode-controles {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 16px; background: var(--paper); border-radius: 14px;
+}
+.episode-controles button {
+  display: grid; place-items: center;
+  width: 36px; height: 36px; flex-shrink: 0;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: var(--paper-bright); color: var(--ink); cursor: pointer;
+}
+.episode-controles button:hover { border-color: var(--violet); color: var(--violet); }
+.episode-play {
+  width: 46px !important; height: 46px !important;
+  background: var(--ink) !important; border-color: var(--ink) !important;
+  color: var(--paper-bright) !important;
+}
+.episode-play:hover { background: var(--violet) !important; border-color: var(--violet) !important; color: #fff !important; }
+.episode-tempo {
+  font-size: 0.76rem; color: var(--ink-soft);
+  font-variant-numeric: tabular-nums; min-width: 40px;
+}
+.episode-barra { flex: 1; min-width: 120px; accent-color: var(--violet); }
+.episode-velocidade {
+  width: auto !important; padding: 0 12px; gap: 5px;
+  display: inline-flex !important; align-items: center;
+  font-size: 0.78rem; font-weight: 600;
+}
+.episode-baixar {
+  display: grid; place-items: center;
+  width: 36px; height: 36px; flex-shrink: 0;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: var(--paper-bright); color: var(--ink-soft);
+}
+.episode-baixar:hover { border-color: var(--violet); color: var(--violet); }
+
+/* --- Transcrição --- */
+.episode-transcricao { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
+.episode-turno button {
+  display: grid; grid-template-columns: 84px 1fr; gap: 16px;
+  width: 100%; padding: 12px 14px; text-align: left;
+  background: none; border: none; border-radius: 11px; cursor: pointer;
+  border-left: 3px solid transparent;
+}
+.episode-turno button:hover { background: var(--paper); }
+.episode-turno.is-atual button { background: var(--violet-pale); border-left-color: var(--violet); }
+.episode-locutor {
+  display: flex; flex-direction: column; gap: 2px;
+  font-size: 0.8rem; font-weight: 700;
+}
+.episode-locutor.is-nina { color: var(--violet); }
+.episode-locutor.is-teo { color: #076f88; }
+.episode-locutor small {
+  font-weight: 400; font-size: 0.68rem; color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.episode-turno p { margin: 0; line-height: 1.68; color: var(--ink); }
+
+.episode-rodape {
+  display: flex; justify-content: space-between; align-items: center; gap: 20px;
+  padding: 22px 24px; background: var(--paper); border-radius: var(--radius); flex-wrap: wrap;
+}
+.episode-rodape span {
+  display: block; font-size: 0.68rem; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--ink-soft); font-weight: 700; margin-bottom: 6px;
+}
+.episode-rodape p { margin: 0; font-size: 0.88rem; color: var(--ink-soft); line-height: 1.6; max-width: 52ch; }
+
+/* Chamada do episódio dentro da aula. */
+.lesson-audio {
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  padding: 20px 24px; margin-block: 26px; flex-wrap: wrap;
+  background: var(--violet-pale); border-radius: var(--radius);
+}
+.lesson-audio span {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em;
+  font-weight: 700; color: var(--violet);
+}
+.lesson-audio h3 { margin: 6px 0 4px; font-size: 1.1rem; }
+.lesson-audio p { margin: 0; font-size: 0.86rem; color: var(--ink-soft); }
+
+@media (max-width: 640px) {
+  .episode-turno button { grid-template-columns: 1fr; gap: 4px; }
+  .episode-locutor { flex-direction: row; align-items: baseline; gap: 8px; }
+  .episode-controles { gap: 8px; }
+  .episode-tempo { min-width: 34px; font-size: 0.72rem; }
+}

@@ -1,5 +1,9 @@
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
+import { episodios } from "./audio";
 import { challenges } from "./challenges";
 import { getModuleLessons, getAllLessons, totalLessons, tracks } from "./curriculum";
 import { glossary, glossaryById } from "./glossary";
@@ -156,6 +160,61 @@ describe("aulas escritas", () => {
       const stages = lessons.filter((lesson) => `${lesson.trackId}/${lesson.moduleId}` === key);
       expect(stages.map((lesson) => lesson.stage).sort()).toEqual(["desafio", "experimento", "teoria"]);
     }
+  });
+});
+
+describe("episódios de áudio", () => {
+  const catalogo = episodios.map((episodio) => [episodio.id, episodio] as const);
+
+  it("todo episódio aponta para um módulo do currículo", () => {
+    const modulos = new Set(
+      tracks.flatMap((track) => track.modules.map((modulo) => `${track.id}/${modulo.id}`)),
+    );
+    for (const episodio of episodios) {
+      expect(modulos.has(episodio.id), episodio.id).toBe(true);
+      expect(episodio.id).toBe(`${episodio.trackId}/${episodio.moduleId}`);
+    }
+  });
+
+  it.each(catalogo)("%s: os tempos da transcrição são crescentes", (_id, episodio) => {
+    let anterior = -1;
+    for (const turno of episodio.turnos) {
+      expect(turno.at).toBeGreaterThanOrEqual(anterior);
+      expect(turno.fim).toBeGreaterThan(turno.at);
+      anterior = turno.at;
+    }
+  });
+
+  it.each(catalogo)("%s: nenhuma fala começa depois do fim do áudio", (_id, episodio) => {
+    // Um tempo maior que a duração deixaria o destaque da transcrição preso.
+    for (const turno of episodio.turnos) {
+      expect(turno.at).toBeLessThanOrEqual(episodio.duracao + 1);
+    }
+  });
+
+  it.each(catalogo)("%s: as duas vozes aparecem e se alternam", (_id, episodio) => {
+    const vozes = new Set(episodio.turnos.map((turno) => turno.voz));
+    expect(vozes.size).toBe(2);
+    let seguidas = 1;
+    for (let i = 1; i < episodio.turnos.length; i += 1) {
+      seguidas = episodio.turnos[i].voz === episodio.turnos[i - 1].voz ? seguidas + 1 : 1;
+      // Três falas seguidas da mesma voz viram monólogo.
+      expect(seguidas, `${episodio.id} na fala ${i}`).toBeLessThan(3);
+    }
+  });
+
+  it.each(catalogo)("%s: a transcrição tem texto de verdade", (_id, episodio) => {
+    expect(episodio.turnos.length).toBeGreaterThanOrEqual(20);
+    for (const turno of episodio.turnos) {
+      expect(turno.texto.trim().length).toBeGreaterThan(15);
+    }
+    expect(episodio.resumo.trim().length).toBeGreaterThan(20);
+  });
+
+  it.each(catalogo)("%s: o mp3 existe no disco", (_id, episodio) => {
+    // `media/audio` fica fora do build: os episódios sobem por deploy-audio.sh.
+    const arquivo = resolve(process.cwd(), "media/audio", episodio.src.replace("/audio/", ""));
+    expect(existsSync(arquivo), arquivo).toBe(true);
   });
 });
 

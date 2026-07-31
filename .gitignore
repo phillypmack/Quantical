@@ -11,3 +11,12 @@ playwright-report
 *.tsbuildinfo
 .DS_Store
 quantical-sites.tar.gz
+
+# Falas já sintetizadas, guardadas para não regerar o episódio inteiro quando
+# só uma linha do roteiro muda. É cache: reconstrói sozinho.
+media/audio/.cache/
+media/audicao/
+
+# Os mp3 dos episódios FICAM versionados de propósito. O XTTS é estocástico:
+# regerar não devolve o mesmo áudio, então o arquivo é o artefato, não um
+# derivado. Eles não entram no build — vão ao servidor por deploy-audio.sh.

@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CheckCircle2, Circle, Clock, Target } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Circle, Clock, Headphones, Target } from "lucide-react";
 
+import { formatarTempo, getEpisodioDoModulo, slugDoEpisodio } from "@/data/audio";
 import type { Module, Track } from "@/data/curriculum";
 import { getModuleLessons } from "@/data/curriculum";
 import { getGlossaryEntry } from "@/data/glossary";
@@ -44,6 +45,8 @@ export function LessonExperience({
   const stages = getModuleLessons(track.id, module.id);
   const isComplete = completed.includes(lessonId);
   const doneCount = stages.filter((item) => completed.includes(item.id)).length;
+  // O episódio cobre o módulo inteiro, então só aparece na porta de entrada.
+  const episodio = stageId === "teoria" ? getEpisodioDoModulo(track.id, module.id) : undefined;
 
   // O estágio "experimento" e o "desafio" concluem por ação, não por quiz.
   const [experimentDone, setExperimentDone] = useState(false);
@@ -128,6 +131,27 @@ export function LessonExperience({
           </div>
           <span className="lesson-number">{String(module.number).padStart(2, "0")}</span>
         </header>
+
+        {episodio && (
+          <aside className="lesson-audio">
+            <div>
+              <span>
+                <Headphones size={14} /> Prefere ouvir?
+              </span>
+              <h3>{episodio.titulo}</h3>
+              <p>
+                {formatarTempo(episodio.duracao)} de conversa sobre este módulo, com transcrição
+                completa.
+              </p>
+            </div>
+            <Link
+              className="button button--light button--small"
+              href={`/audio/${slugDoEpisodio(episodio.id)}`}
+            >
+              Ouvir o episódio <ArrowRight size={15} />
+            </Link>
+          </aside>
+        )}
 
         {lesson ? (
           <>
