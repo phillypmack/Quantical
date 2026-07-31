@@ -75,14 +75,16 @@ server {
 
     # Episódios de áudio, publicados fora do build por scripts/deploy-audio.sh.
     # Ficam separados porque o artefato do site tem ~1 MB e os mp3 somam dezenas.
-    location /audio/ {
-        alias /var/www/quantical-audio/;
+    # Casa só o .mp3, e NÃO o prefixo /audio/: as PÁGINAS dos episódios moram
+    # em /audio/<slug> e precisam continuar vindo do site. Um location /audio/
+    # comum engoliria as duas coisas e as páginas dariam 404.
+    location ~ ^/audio/(?<episodio>[^/]+\.mp3)\$ {
+        alias /var/www/quantical-audio/\$episodio;
         include /etc/nginx/snippets/quantical-headers.conf;
-        # `bytes` é o que permite arrastar a barra sem baixar tudo antes.
+        # Accept-Ranges é o que permite arrastar a barra sem baixar tudo antes.
         add_header Accept-Ranges bytes always;
-        expires 30d;
+
         add_header Cache-Control "public, max-age=2592000" always;
-        try_files \$uri =404;
         access_log off;
     }
 

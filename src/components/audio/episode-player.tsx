@@ -45,7 +45,13 @@ export function EpisodePlayer({ episode }: { episode: AudioEpisode }) {
         completeLesson(progressoId, 100);
       }
     };
-    const aoCarregar = () => setDuracao(audio.duration || episode.duracao);
+    const aoCarregar = () => {
+      setDuracao(Number.isFinite(audio.duration) ? audio.duration : episode.duracao);
+      if (buscaPendente.current !== null) {
+        audio.currentTime = buscaPendente.current;
+        buscaPendente.current = null;
+      }
+    };
 
     audio.addEventListener("timeupdate", aoAtualizar);
     audio.addEventListener("loadedmetadata", aoCarregar);
@@ -60,12 +66,30 @@ export function EpisodePlayer({ episode }: { episode: AudioEpisode }) {
     };
   }, [completeLesson, progressoId, episode.duracao]);
 
-  const irPara = useCallback((segundos: number) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.currentTime = Math.max(0, Math.min(audio.duration || episode.duracao, segundos));
-    setTempo(audio.currentTime);
-  }, [episode.duracao]);
+  // Posição pedida antes de o áudio estar pronto para buscar.
+  const buscaPendente = useRef<number | null>(null);
+
+  const irPara = useCallback(
+    (segundos: number) => {
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      const limite = Number.isFinite(audio.duration) ? audio.duration : episode.duracao;
+      const alvo = Math.max(0, Math.min(limite, segundos));
+
+      // Atribuir currentTime antes de os metadados chegarem é ignorado pelo
+      // navegador em silêncio — e clicar numa fala logo que a página abre é
+      // exatamente quando isso acontece. Guarda e aplica no loadedmetadata.
+      if (audio.readyState === 0) {
+        buscaPendente.current = alvo;
+        audio.load();
+      } else {
+        audio.currentTime = alvo;
+      }
+      setTempo(alvo);
+    },
+    [episode.duracao],
+  );
 
   const alternar = useCallback(() => {
     const audio = audioRef.current;

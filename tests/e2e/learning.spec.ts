@@ -162,40 +162,43 @@ test("permalink abre o laboratório com o circuito já montado", async ({ page, 
   await expect(page.locator(".circuit-row")).toHaveCount(3);
 });
 
-test("o episódio toca e a transcrição navega o áudio", async ({ page }) => {
+/** Abre o primeiro episódio e espera o player estar hidratado. */
+async function abrirPrimeiroEpisodio(page: import("@playwright/test").Page) {
   await page.goto("/audio");
-
   const primeiro = page.locator(".audio-card a").first();
-  if ((await primeiro.count()) === 0) {
-    test.skip(true, "nenhum episódio publicado ainda");
-    return;
-  }
+  await expect(primeiro).toBeVisible();
   await primeiro.click();
-
+  // Só depois que o player aparece a página está hidratada e os handlers de
+  // clique da transcrição existem de fato.
   await expect(page.getByRole("button", { name: "Tocar episódio" })).toBeVisible();
+}
 
-  // Clicar numa fala da transcrição precisa posicionar o áudio.
-  const falas = page.locator(".episode-turno button");
-  await falas.nth(3).click();
-  const posicao = await page.locator("audio").evaluate((el: HTMLAudioElement) => el.currentTime);
-  expect(posicao).toBeGreaterThan(0);
+test("o episódio toca e a transcrição navega o áudio", async ({ page }) => {
+  await abrirPrimeiroEpisodio(page);
+
+  // O mp3 é servido de fora do build; se isso quebrar, o player entra em modo
+  // erro e nada abaixo funciona.
+  await expect
+    .poll(() => page.locator("audio").evaluate((el: HTMLAudioElement) => el.readyState))
+    .toBeGreaterThan(0);
+
+  await page.locator(".episode-turno button").nth(3).click();
+
+  await expect
+    .poll(() => page.locator("audio").evaluate((el: HTMLAudioElement) => el.currentTime))
+    .toBeGreaterThan(0);
 
   // E a fala clicada precisa acender.
   await expect(page.locator(".episode-turno.is-atual")).toHaveCount(1);
 });
 
 test("a transcrição do episódio é HTML de verdade, não só legenda do áudio", async ({ page }) => {
-  await page.goto("/audio");
-  const primeiro = page.locator(".audio-card a").first();
-  if ((await primeiro.count()) === 0) {
-    test.skip(true, "nenhum episódio publicado ainda");
-    return;
-  }
-  await primeiro.click();
+  await abrirPrimeiroEpisodio(page);
 
   // É o que torna o episódio indexável em português — e a alternativa
   // acessível para quem não vai ouvir.
   const falas = page.locator(".episode-turno p");
+  await expect(falas).not.toHaveCount(0);
   expect(await falas.count()).toBeGreaterThanOrEqual(20);
   expect((await falas.first().textContent())?.length ?? 0).toBeGreaterThan(20);
 });
