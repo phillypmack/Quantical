@@ -20,7 +20,7 @@ export type Block =
    * aqui a quebra é um circuito executável, não uma afirmação: o aluno não lê
    * que a metáfora falha, ele roda e vê falhar.
    */
-  | { kind: "metaphor"; image: string; breaks: string; circuit: Circuit; caption: string }
+  | { kind: "metaphor"; image: string; imageUrl?: string; breaks: string; circuit: Circuit; caption: string }
   | { kind: "figure"; view: "bloch" | "histogram" | "circuit"; circuit: Circuit; caption: string };
 
 export type QuestionOption = {

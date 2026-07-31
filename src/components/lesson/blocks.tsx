@@ -152,6 +152,14 @@ function MetaphorBlock({ block }: { block: Extract<Block, { kind: "metaphor" }> 
           <Sparkles size={14} /> A imagem que costumam usar
         </span>
         <p>{block.image}</p>
+        {block.imageUrl && (
+          <img
+            src={block.imageUrl}
+            alt="Ilustração da metáfora"
+            className="metaphor-visual"
+            style={{ width: "100%", borderRadius: "8px", marginTop: "1rem" }}
+          />
+        )}
       </div>
       <div className="metaphor-break">
         <span>
