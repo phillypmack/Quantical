@@ -784,3 +784,131 @@
   .revisao { width: calc(100% - 32px); padding: 48px 0 80px; }
   .revisao-vazio { padding: 24px; }
 }
+
+/* ---------------------------------------------------------------------------
+   Notação
+
+   Símbolo marcado no texto da aula. Visualmente distinto do termo do
+   glossário — o traço é sólido e a cor é a do destaque quente — porque são
+   duas coisas diferentes: um termo você entende, um símbolo você antes de
+   tudo precisa saber PRONUNCIAR.
+--------------------------------------------------------------------------- */
+.notacao-termo {
+  position: relative; display: inline; padding: 0;
+  background: none; border: none; cursor: help;
+  color: inherit; font: inherit;
+  border-bottom: 1.5px solid var(--orange);
+}
+.notacao-termo:hover .notacao-popover,
+.notacao-termo:focus-visible .notacao-popover { display: block; }
+.notacao-popover strong { color: #ffd9c2; }
+
+/* Cartão "antes de começar", derivado do `estreia` de cada símbolo. */
+.notacao-nova {
+  margin: 34px 0 8px;
+  padding: 24px 26px;
+  border: 1px solid var(--orange);
+  border-radius: var(--radius);
+  background: var(--orange-pale);
+}
+
+.notacao-nova header span {
+  display: inline-flex; align-items: center; gap: 7px;
+  color: var(--orange); font-size: 0.7rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+
+.notacao-nova h2 {
+  margin: 10px 0 6px;
+  font-size: 1.18rem; line-height: 1.3; letter-spacing: -0.01em;
+}
+
+.notacao-nova header p { margin: 0; color: var(--ink-soft); font-size: 0.88rem; line-height: 1.6; }
+
+.notacao-nova dl { margin: 20px 0 0; display: grid; gap: 16px; }
+.notacao-nova dl > div { display: grid; gap: 5px; }
+
+.notacao-nova dt { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+
+.notacao-nova dt code {
+  padding: 3px 10px;
+  border-radius: 7px;
+  background: var(--ink);
+  color: var(--paper-bright);
+  font-size: 1rem;
+  font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
+}
+
+.notacao-nova dt span { color: var(--orange); font-size: 0.92rem; font-weight: 600; }
+.notacao-nova dd { margin: 0; color: var(--ink); font-size: 0.9rem; line-height: 1.65; }
+
+.notacao-nova > a {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 20px;
+  color: var(--violet); font-size: 0.84rem; font-weight: 500; text-decoration: none;
+}
+.notacao-nova > a:hover { text-decoration: underline; }
+
+/* Página /notacao */
+.notacao-pagina { width: min(860px, calc(100% - 48px)); margin: 0 auto; padding: 72px 0 110px; }
+
+.notacao-pagina h1 {
+  margin: 0 0 18px;
+  font-size: clamp(2.1rem, 5vw, 3.1rem); line-height: 1.06; letter-spacing: -0.03em;
+}
+
+.notacao-pagina .lead { margin: 0; max-width: 60ch; color: var(--ink-soft); font-size: 1.02rem; line-height: 1.7; }
+.notacao-pagina .lead strong { color: var(--ink); }
+
+.notacao-lista { margin: 46px 0 0; padding: 0; list-style: none; display: grid; gap: 14px; }
+
+.notacao-lista li {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 24px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper-bright);
+  /* Âncora do #id não pode ficar embaixo do cabeçalho fixo. */
+  scroll-margin-top: 90px;
+}
+
+.notacao-lista li:target { border-color: var(--orange); background: var(--orange-pale); }
+
+.notacao-simbolo code {
+  display: inline-block; padding: 6px 13px; border-radius: 8px;
+  background: var(--ink); color: var(--paper-bright);
+  font-size: 1.15rem; font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
+}
+
+.notacao-simbolo strong { display: block; margin-top: 9px; color: var(--orange); font-size: 0.9rem; }
+
+.notacao-corpo p { margin: 0 0 12px; color: var(--ink); font-size: 0.92rem; line-height: 1.7; }
+
+.notacao-porque { color: var(--ink-soft) !important; }
+.notacao-porque span {
+  display: block; margin-bottom: 3px;
+  color: var(--ink-soft); font-size: 0.68rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em;
+}
+
+.notacao-aula {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--violet); font-size: 0.8rem; text-decoration: none;
+}
+.notacao-aula:hover { text-decoration: underline; }
+.notacao-aula--fora { color: var(--ink-soft); font-style: italic; }
+
+.notacao-veja { margin: 10px 0 0 !important; font-size: 0.8rem !important; color: var(--ink-soft) !important; }
+/* Sublinhado, não só cor: o axe reprova link distinguido apenas por cor, e
+   com razão — quem não distingue as cores não vê que ali há um link. */
+.notacao-veja a { color: var(--violet); text-decoration: underline; }
+
+.notacao-rodape { margin-top: 40px; color: var(--ink-soft); font-size: 0.88rem; line-height: 1.7; }
+.notacao-rodape a { color: var(--violet); text-decoration: underline; }
+
+@media (max-width: 640px) {
+  .notacao-pagina { width: calc(100% - 32px); padding: 48px 0 80px; }
+  .notacao-lista li { grid-template-columns: 1fr; gap: 14px; padding: 20px; }
+  .notacao-nova { padding: 20px; }
+}

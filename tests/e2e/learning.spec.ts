@@ -699,3 +699,69 @@ test("cada estágio de uma aula tem título e canonical próprios", async ({ pag
     await expect(page.locator('meta[property="og:title"]')).toHaveCount(1);
   }
 });
+
+/* ---------------------------------------------------------------------------
+   Notação: o aluno não precisa sair do site para saber ler um símbolo
+--------------------------------------------------------------------------- */
+
+test("a aula ENSINA a ler a notação antes de usá-la", async ({ page }) => {
+  // O defeito relatado: a aula declarava como objetivo "Ler a notação |0⟩,
+  // |1⟩ e α|0⟩ + β|1⟩", usava a notação no terceiro parágrafo, e não ensinava
+  // a ler em lugar nenhum. O aluno teve de perguntar a outra ferramenta.
+  await page.goto("/curso/iniciante/bits-e-qubits/teoria");
+
+  const cartao = page.locator(".notacao-nova");
+  await expect(cartao).toBeVisible();
+
+  // A leitura em voz alta é a informação que faltava.
+  await expect(cartao).toContainText("ket zero");
+  await expect(cartao).toContainText("ket um");
+  await expect(cartao).toContainText("alfa");
+  await expect(cartao).toContainText("beta");
+  await expect(cartao).toContainText("psi");
+
+  // E vem ANTES da prosa, não depois.
+  const posCartao = await cartao.boundingBox();
+  const posProsa = await page.locator(".lesson-prose").boundingBox();
+  expect(posCartao!.y).toBeLessThan(posProsa!.y);
+});
+
+test("o símbolo no meio do texto diz como se lê ao ser tocado", async ({ page }) => {
+  await page.goto("/curso/iniciante/bits-e-qubits/teoria");
+
+  const simbolo = page.locator(".lesson-prose .notacao-termo").first();
+  await expect(simbolo).toBeVisible();
+
+  // O popover é revelado por hover/focus, como o do glossário.
+  await simbolo.focus();
+  await expect(simbolo.locator(".notacao-popover")).toContainText("lê-se");
+});
+
+test("a página de notação responde à pergunta que fez o aluno sair do site", async ({ page }) => {
+  await page.goto("/notacao");
+  await expect(page.getByRole("heading", { name: /Como ler a\s*notação quântica/i })).toBeVisible();
+
+  const ket = page.locator("#ket");
+  await expect(ket).toContainText("ket zero");
+  // Não basta dizer o que é: tem de dizer por que a notação existe.
+  await expect(ket).toContainText(/Por que essa notação existe/i);
+
+  // Todos os kets que o material usa de verdade estão cobertos.
+  for (const id of ["ket", "ket-um", "ket-mais", "ket-menos", "ket-dois-qubits", "bell"]) {
+    await expect(page.locator(`#${id}`), id).toHaveCount(1);
+  }
+
+  // E dá para chegar lá pelo menu, sem sair do site.
+  await page.goto("/");
+  await page.getByRole("link", { name: "Notação", exact: true }).click();
+  await expect(page).toHaveURL(/\/notacao/);
+});
+
+test("a notação não tem violações graves de acessibilidade", async ({ page }) => {
+  await page.goto("/notacao");
+  const results = await new AxeBuilder({ page }).analyze();
+  const blocking = results.violations.filter(
+    (violation) => violation.impact === "critical" || violation.impact === "serious",
+  );
+  expect(blocking, blocking.map((item) => item.id).join(", ")).toEqual([]);
+});

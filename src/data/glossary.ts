@@ -27,7 +27,8 @@ export const glossary: GlossaryEntry[] = [
   {
     id: "bra",
     term: "Bra",
-    definition: "Vetor dual representado por ⟨ψ| na notação de Dirac.",
+    definition:
+      "A mesma caixa virada ao contrário, ⟨…|. Se o ket é o estado, o bra é a pergunta “o quanto isto se parece com aquilo?”. Lê-se “bra”.",
     seeAlso: ["ket"],
   },
   {
@@ -97,7 +98,8 @@ export const glossary: GlossaryEntry[] = [
   {
     id: "ket",
     term: "Ket",
-    definition: "Vetor de estado representado por |ψ⟩ na notação de Dirac.",
+    definition:
+      "A caixa |…⟩ que se escreve em volta de um estado, avisando que aquilo é um estado quântico e não um número. |0⟩ lê-se “ket zero”.",
     seeAlso: ["bra"],
   },
   {

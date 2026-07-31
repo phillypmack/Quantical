@@ -12,6 +12,7 @@ const nav = [
   { href: "/aprender", label: "Trilhas" },
   { href: "/laboratorio", label: "Laboratório" },
   { href: "/desafios", label: "Desafios" },
+  { href: "/notacao", label: "Notação" },
   { href: "/glossario", label: "Glossário" },
 ];
 

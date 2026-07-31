@@ -8,6 +8,8 @@ import { challenges } from "./challenges";
 import { equivocos, equivocosPorId } from "./equivocos";
 import { getModuleLessons, getAllLessons, totalLessons, tracks } from "./curriculum";
 import { glossary, glossaryById } from "./glossary";
+import { getLesson } from "./lessons";
+import { notacaoPorId, notacoes } from "./notacao";
 import { authoredModules, lessons } from "./lessons";
 import { parseQiskit } from "@/lib/quantum/parser";
 import { simulateCircuit } from "@/lib/quantum/simulator";
@@ -321,6 +323,139 @@ describe("currículo", () => {
     for (const track of tracks) {
       const ids = track.modules.map((module) => module.id);
       expect(new Set(ids).size).toBe(ids.length);
+    }
+  });
+});
+
+describe("notação: nada aparece sem ter sido apresentado", () => {
+  /**
+   * A trava que faltava.
+   *
+   * A primeira aula declarava como objetivo "Ler a notação |0⟩, |1⟩ e
+   * α|0⟩ + β|1⟩", usava a notação no terceiro parágrafo e não ensinava a ler
+   * em lugar nenhum. `|0⟩` aparecia em 17 das 18 aulas e nunca era
+   * pronunciado. Um aluno teve de sair da plataforma para perguntar a outra
+   * ferramenta o que aquilo queria dizer.
+   *
+   * Nenhum teste podia pegar isso porque nenhum teste sabia o que era
+   * "notação". Agora sabe.
+   */
+  const ordem = getAllLessons().map((item) => item.id);
+
+  /** Todo o texto visível de uma aula, incluindo fórmulas e legendas. */
+  const textoDaAula = (licaoId: string) => {
+    const licao = getLesson(licaoId);
+    if (!licao) return "";
+    const partes: string[] = [licao.title, licao.summary, ...licao.objectives];
+    for (const bloco of licao.blocks) {
+      if ("text" in bloco && bloco.text) partes.push(bloco.text);
+      if ("latex" in bloco && bloco.latex) partes.push(bloco.latex);
+      if ("caption" in bloco && bloco.caption) partes.push(bloco.caption);
+      if ("items" in bloco && bloco.items) partes.push(...bloco.items);
+      if ("title" in bloco && bloco.title) partes.push(bloco.title);
+    }
+    for (const pergunta of licao.quiz) {
+      partes.push(pergunta.prompt);
+      for (const opcao of pergunta.options) partes.push(opcao.text, opcao.explanation);
+    }
+    for (const passo of licao.guided?.steps ?? []) {
+      partes.push(passo.instruction, passo.reveal);
+      if (passo.predict) partes.push(passo.predict.question);
+    }
+    if (licao.exercise) partes.push(licao.exercise.prompt, ...licao.exercise.hints);
+    return partes.join("\n");
+  };
+
+  const casa = (padrao: RegExp, texto: string) => new RegExp(padrao.source, "u").test(texto);
+
+  it("os ids são únicos", () => {
+    const ids = notacoes.map((item) => item.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("nenhum símbolo aparece numa aula ANTERIOR à que o apresenta", () => {
+    // Este é o defeito, dito em código: usar um símbolo como se ele já fosse
+    // conhecido. Se alguém escrever |ψ⟩ numa aula antes da que o apresenta, o
+    // teste falha e diz exatamente onde.
+    for (const item of notacoes) {
+      if (!item.estreia) continue;
+      const limite = ordem.indexOf(item.estreia);
+      expect(limite, `estreia de ${item.id} não é uma aula real`).toBeGreaterThanOrEqual(0);
+
+      for (const licaoId of ordem.slice(0, limite)) {
+        expect(
+          casa(item.padrao, textoDaAula(licaoId)),
+          `${item.simbolo} (${item.id}) aparece em ${licaoId}, antes de ser apresentado em ${item.estreia}`,
+        ).toBe(false);
+      }
+    }
+  });
+
+  it("o símbolo realmente aparece na aula onde diz estrear", () => {
+    // Sem isto, uma declaração de estreia envelhece calada: a aula é
+    // reescrita, o símbolo sai, e a trava passa a proteger nada.
+    for (const item of notacoes) {
+      if (!item.estreia) continue;
+      expect(
+        casa(item.padrao, textoDaAula(item.estreia)),
+        `${item.simbolo} declara estrear em ${item.estreia}, mas não aparece lá`,
+      ).toBe(true);
+    }
+  });
+
+  it("toda OCORRÊNCIA de símbolo tem como ser lida quando aparece", () => {
+    // A varredura que revelou o problema, agora permanente — e por ocorrência,
+    // não por aula. Perguntar "algum símbolo é explicado aqui?" deixaria
+    // passar uma aula que explica |1⟩ e usa |ψ⟩ sem nunca apresentá-lo.
+    const FAMILIAS = [
+      { nome: "ket", padrao: /\|[^⟩|\s]{0,6}⟩/gu },
+      { nome: "letra grega", padrao: /[αβψφθλ]/gu },
+      { nome: "raiz", padrao: /√/gu },
+      { nome: "produto tensorial", padrao: /⊗/gu },
+      { nome: "adaga", padrao: /†/gu },
+    ];
+
+    for (const licaoId of ordem) {
+      const texto = textoDaAula(licaoId);
+      const ate = notacoes.filter(
+        (item) => item.estreia !== undefined && ordem.indexOf(item.estreia) <= ordem.indexOf(licaoId),
+      );
+
+      for (const familia of FAMILIAS) {
+        for (const encontrado of texto.match(familia.padrao) ?? []) {
+          const legivel = ate.some((item) => casa(item.padrao, encontrado));
+          expect(
+            legivel,
+            `"${encontrado}" aparece em ${licaoId} e o aluno não tem onde ler esse símbolo`,
+          ).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("a leitura em voz alta existe e não repete o símbolo", () => {
+    // "|0⟩ lê-se |0⟩" não ensina nada. A leitura tem de ser pronunciável.
+    for (const item of notacoes) {
+      expect(item.leitura.length, item.id).toBeGreaterThan(1);
+      expect(/[|⟩⟨α-ω√⊗†²]/u.test(item.leitura), `${item.id}: a leitura contém símbolo`).toBe(false);
+    }
+  });
+
+  it("a explicação não se apoia no próprio símbolo nem é curta demais", () => {
+    // O glossário definia ket como "vetor de estado representado por |ψ⟩ na
+    // notação de Dirac" — circular e inútil para quem não sabe ler |ψ⟩.
+    for (const item of notacoes) {
+      expect(item.oQueE.length, item.id).toBeGreaterThan(80);
+      expect(item.porQue.length, item.id).toBeGreaterThan(80);
+      expect(item.oQueE.startsWith(item.simbolo), `${item.id}: definição circular`).toBe(false);
+    }
+  });
+
+  it("todo vejaTambem aponta para um símbolo que existe", () => {
+    for (const item of notacoes) {
+      for (const outro of item.vejaTambem ?? []) {
+        expect(notacaoPorId.has(outro), `${item.id} -> ${outro}`).toBe(true);
+      }
     }
   });
 });

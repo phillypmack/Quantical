@@ -16,6 +16,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/desafios", priority: 0.8 },
     { path: "/audio", priority: 0.8 },
     { path: "/glossario", priority: 0.7 },
+    // Conteúdo real em português num assunto onde quase não existe: é a
+    // pergunta que fez um aluno sair da plataforma para procurar resposta.
+    { path: "/notacao", priority: 0.8 },
     { path: "/projetos", priority: 0.4 },
     { path: "/progresso", priority: 0.4 },
     { path: "/entrar", priority: 0.3 },

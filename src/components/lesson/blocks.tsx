@@ -5,6 +5,7 @@ import { AlertTriangle, Lightbulb, Play, Sparkles } from "lucide-react";
 
 import type { Block } from "@/data/lessons";
 import { glossary, type GlossaryEntry } from "@/data/glossary";
+import { notacoes, type Notacao } from "@/data/notacao";
 import { cn } from "@/lib/cn";
 import { runSync } from "@/lib/quantum/simulator-client";
 import { CircuitDiagram } from "@/components/quantum/circuit-diagram";
@@ -20,7 +21,21 @@ const TERMS = glossary
     pattern: new RegExp(`\\b${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i"),
   }));
 
-type Segment = string | { entry: GlossaryEntry; text: string };
+/**
+ * Símbolos, do mais longo para o mais curto.
+ *
+ * `|ψ⟩` tem de ser tentado antes de `ψ`, senão a letra sozinha casaria dentro
+ * do ket e o aluno receberia a explicação errada. É a mesma precaução que o
+ * glossário toma com sinônimos.
+ */
+const SIMBOLOS = [...notacoes]
+  .sort((a, b) => b.simbolo.length - a.simbolo.length)
+  .map((nota) => ({ nota, pattern: new RegExp(nota.padrao.source, "u") }));
+
+type Segment =
+  | string
+  | { entry: GlossaryEntry; text: string }
+  | { nota: Notacao; text: string };
 
 /**
  * Marca a primeira ocorrência de cada termo do glossário ao longo da aula.
@@ -36,6 +51,28 @@ type Segment = string | { entry: GlossaryEntry; text: string };
  */
 function markParagraph(text: string, used: Set<string>): Segment[] {
   let segments: Segment[] = [text];
+
+  // Símbolos primeiro: `|0⟩` precisa virar um pedaço próprio antes de o
+  // marcador de termos poder partir o texto em volta dele.
+  for (const { nota, pattern } of SIMBOLOS) {
+    if (used.has(nota.id)) continue;
+
+    const index = segments.findIndex((part) => typeof part === "string" && pattern.test(part));
+    if (index < 0) continue;
+
+    const source = segments[index] as string;
+    const match = pattern.exec(source);
+    if (!match) continue;
+
+    used.add(nota.id);
+    segments = [
+      ...segments.slice(0, index),
+      source.slice(0, match.index),
+      { nota, text: match[0] },
+      source.slice(match.index + match[0].length),
+      ...segments.slice(index + 1),
+    ];
+  }
 
   for (const { entry, pattern } of TERMS) {
     if (used.has(entry.id)) continue;
@@ -73,10 +110,24 @@ function markBlocks(blocks: Block[]): Map<number, Segment[]> {
 function Prose({ segments }: { segments: Segment[] }) {
   return (
     <p>
-      {segments.map((part, index) =>
-        typeof part === "string" ? (
-          part
-        ) : (
+      {segments.map((part, index) => {
+        if (typeof part === "string") return part;
+
+        if ("nota" in part) {
+          return (
+            <button className="notacao-termo" key={`${part.nota.id}-${index}`} type="button">
+              {part.text}
+              <span className="glossary-popover notacao-popover" role="tooltip">
+                {/* A leitura vem PRIMEIRO e em destaque: sem saber pronunciar,
+                    o aluno não consegue nem pensar sobre o símbolo. */}
+                <strong>lê-se “{part.nota.leitura}”</strong>
+                {part.nota.oQueE}
+              </span>
+            </button>
+          );
+        }
+
+        return (
           <button className="glossary-term" key={`${part.entry.id}-${index}`} type="button">
             {part.text}
             <span className="glossary-popover" role="tooltip">
@@ -84,8 +135,8 @@ function Prose({ segments }: { segments: Segment[] }) {
               {part.entry.definition}
             </span>
           </button>
-        ),
-      )}
+        );
+      })}
     </p>
   );
 }

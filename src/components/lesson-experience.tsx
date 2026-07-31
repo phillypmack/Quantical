@@ -12,6 +12,7 @@ import { getLesson } from "@/data/lessons";
 import { cn } from "@/lib/cn";
 import { LessonBlocks } from "./lesson/blocks";
 import { Quiz } from "./lesson/quiz";
+import { NotacaoNova } from "./lesson/notacao-nova";
 import { ExerciseWorkbench } from "./quantum/exercise-workbench";
 import { GuidedExperiment } from "./quantum/guided-experiment";
 import { useProgress } from "./progress-provider";
@@ -169,6 +170,10 @@ export function LessonExperience({
                 </ul>
               </div>
             )}
+
+            {/* Vem ANTES da prosa: o aluno precisa saber ler o símbolo antes
+                de encontrá-lo no terceiro parágrafo, não depois. */}
+            <NotacaoNova licaoId={lessonId} />
 
             <section className="lesson-prose">
               <LessonBlocks blocks={lesson.blocks} />
