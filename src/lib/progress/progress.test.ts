@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { buscarAgregado, enviarTentativas } from "./api";
 import { mergeProgress, projectsToDelete } from "./merge";
 import {
   MAX_TENTATIVAS,
@@ -7,6 +8,7 @@ import {
   applyCompletion,
   dayDifference,
   emptyState,
+  marcarSincronizadas,
   parseProgressState,
   studyDate,
 } from "./state";
@@ -259,5 +261,136 @@ describe("registro de tentativas", () => {
       tentativas: [tentativa(), { id: "quebrada" }, null, "texto"],
     });
     expect(round.tentativas).toHaveLength(1);
+  });
+});
+
+describe("sincronização com a API", () => {
+  const pendente = (id: string, sincronizada = false): Tentativa => ({
+    id,
+    tipo: "quiz",
+    licaoId: "iniciante/superposicao/teoria",
+    itemId: "q1",
+    acertou: false,
+    conceitos: ["superposicao"],
+    em: "2026-07-30T10:00:00.000Z",
+    sincronizada,
+  });
+
+  it("marca só o que a API confirmou", () => {
+    const state = base({ tentativas: [pendente("a"), pendente("b"), pendente("c")] });
+    const depois = marcarSincronizadas(state, ["a", "c"]);
+    expect(depois.tentativas.map((item) => item.sincronizada)).toEqual([true, false, true]);
+  });
+
+  it("marcar não apaga nada", () => {
+    // Apagar o que subiu deixaria a revisão dependente da rede para saber o
+    // que o aluno errou — e o site precisa funcionar com a API fora do ar.
+    const state = base({ tentativas: [pendente("a")] });
+    expect(marcarSincronizadas(state, ["a"]).tentativas).toHaveLength(1);
+  });
+
+  it("lista vazia devolve o mesmo objeto, sem render à toa", () => {
+    const state = base({ tentativas: [pendente("a")] });
+    expect(marcarSincronizadas(state, [])).toBe(state);
+  });
+
+  it("id desconhecido é ignorado sem quebrar", () => {
+    const state = base({ tentativas: [pendente("a")] });
+    expect(marcarSincronizadas(state, ["z"]).tentativas[0].sincronizada).toBe(false);
+  });
+
+  it("a marca sobrevive ao localStorage", () => {
+    const state = marcarSincronizadas(base({ tentativas: [pendente("a")] }), ["a"]);
+    const round = parseProgressState(JSON.parse(JSON.stringify(state)));
+    expect(round.tentativas[0].sincronizada).toBe(true);
+  });
+});
+
+describe("cliente da API é tolerante a falha", () => {
+  const tentativa: Tentativa = {
+    id: "aaaaaaaa-0000-4000-8000-000000000001",
+    tipo: "quiz",
+    licaoId: "L",
+    itemId: "i",
+    acertou: false,
+    conceitos: [],
+    em: "2026-07-30T10:00:00.000Z",
+  };
+  const aluno = "11111111-2222-3333-4444-555555555555";
+
+  const comFetch = async (impostor: typeof fetch, executar: () => Promise<unknown>) => {
+    const original = globalThis.fetch;
+    globalThis.fetch = impostor;
+    try {
+      return await executar();
+    } finally {
+      globalThis.fetch = original;
+    }
+  };
+
+  it("rede caída não lança — só volta como não sincronizado", async () => {
+    const resultado = await comFetch(
+      () => Promise.reject(new TypeError("Failed to fetch")),
+      () => enviarTentativas(aluno, [tentativa]),
+    );
+    expect(resultado).toEqual({ ok: false, gravadas: 0 });
+  });
+
+  it("500 do servidor não lança", async () => {
+    const resultado = await comFetch(
+      () => Promise.resolve(new Response("{}", { status: 500 })),
+      () => enviarTentativas(aluno, [tentativa]),
+    );
+    expect(resultado).toEqual({ ok: false, gravadas: 0 });
+  });
+
+  it("resposta que não é JSON não lança", async () => {
+    const resultado = await comFetch(
+      () => Promise.resolve(new Response("<html>502</html>", { status: 200 })),
+      () => enviarTentativas(aluno, [tentativa]),
+    );
+    expect(resultado).toEqual({ ok: false, gravadas: 0 });
+  });
+
+  it("sucesso devolve quantas foram gravadas", async () => {
+    const resultado = await comFetch(
+      () => Promise.resolve(Response.json({ gravadas: 1 })),
+      () => enviarTentativas(aluno, [tentativa]),
+    );
+    expect(resultado).toEqual({ ok: true, gravadas: 1 });
+  });
+
+  it("lista vazia não chega a tocar na rede", async () => {
+    let chamou = false;
+    const resultado = await comFetch(
+      () => {
+        chamou = true;
+        return Promise.reject(new Error("não deveria"));
+      },
+      () => enviarTentativas(aluno, []),
+    );
+    expect(chamou).toBe(false);
+    expect(resultado).toEqual({ ok: true, gravadas: 0 });
+  });
+
+  it("o agregado devolve lista vazia quando a API não responde", async () => {
+    const resultado = await comFetch(
+      () => Promise.reject(new TypeError("Failed to fetch")),
+      () => buscarAgregado("iniciante/superposicao/teoria"),
+    );
+    expect(resultado).toEqual([]);
+  });
+
+  it("não manda os conceitos: o servidor não precisa deles para agregar", async () => {
+    let corpoEnviado = "";
+    await comFetch(
+      (_url, init) => {
+        corpoEnviado = String(init?.body);
+        return Promise.resolve(Response.json({ gravadas: 1 }));
+      },
+      () => enviarTentativas(aluno, [{ ...tentativa, conceitos: ["superposicao"] }]),
+    );
+    expect(corpoEnviado).not.toContain("conceitos");
+    expect(corpoEnviado).toContain(tentativa.id);
   });
 });

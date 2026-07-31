@@ -88,6 +88,28 @@ server {
         access_log off;
     }
 
+    # API de tentativas e agregados, em Docker na própria máquina.
+    #
+    # Mesma origem de propósito: sem CORS a configurar e sem origem nova a
+    # autorizar no CSP, que já traz connect-src 'self'. O site continua
+    # 100% estático — isto aqui é durabilidade, nunca caminho crítico.
+    location /api/ {
+        proxy_pass http://127.0.0.1:6002;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+
+        # Se a API estiver fora do ar, o navegador precisa saber disso rápido
+        # para cair no modo local em vez de pendurar a página.
+        proxy_connect_timeout 3s;
+        proxy_read_timeout 10s;
+        proxy_send_timeout 10s;
+
+        client_max_body_size 512k;
+    }
+
     location /_next/static/ {
         include /etc/nginx/snippets/quantical-headers.conf;
         try_files \$uri =404;

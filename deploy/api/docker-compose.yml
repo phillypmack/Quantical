@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: quantical-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-quantical}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: ${POSTGRES_DB:-quantical}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # 127.0.0.1 e nada mais. Um dos bancos deste servidor está publicado em
+    # 0.0.0.0 e é exatamente o que não se quer repetir aqui.
+    ports:
+      - "127.0.0.1:5441:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-quantical} -d ${POSTGRES_DB:-quantical}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: quantical-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 6002
+      DATABASE_URL: postgresql://${POSTGRES_USER:-quantical}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-quantical}
+    ports:
+      - "127.0.0.1:6002:6002"
+
+volumes:
+  postgres_data:
+    name: quantical_postgres_data

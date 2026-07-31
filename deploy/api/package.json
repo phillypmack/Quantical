@@ -1,0 +1,17 @@
+{
+  "name": "quantical-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "API de tentativas e agregados do Quantical",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

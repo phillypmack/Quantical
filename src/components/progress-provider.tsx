@@ -10,7 +10,13 @@ import {
   type ReactNode,
 } from "react";
 
-import { aplicarTentativa, applyCompletion, emptyState } from "@/lib/progress/state";
+import { TAMANHO_DO_LOTE, enviarTentativas } from "@/lib/progress/api";
+import {
+  aplicarTentativa,
+  applyCompletion,
+  emptyState,
+  marcarSincronizadas,
+} from "@/lib/progress/state";
 import type { Tentativa, TipoTentativa } from "@/lib/revisao/types";
 import * as store from "@/lib/progress/store";
 import { synchronize } from "@/lib/progress/sync";
@@ -126,6 +132,40 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         : { ...current, unlockedOverrides: [...current.unlockedOverrides, moduleId] },
     );
   }, []);
+
+  // Sobe as tentativas pendentes para a API — depois de gravá-las localmente,
+  // nunca antes. O aluno já pode seguir estudando enquanto isto acontece, e se
+  // falhar não acontece nada: a tentativa continua marcada como pendente e vai
+  // na próxima. Nenhum aviso de erro, porque não há erro do ponto de vista de
+  // quem está aprendendo.
+  const pendentes = snapshot.state.tentativas.filter((item) => !item.sincronizada).length;
+  useEffect(() => {
+    if (!snapshot.hydrated || pendentes === 0) return;
+
+    let cancelado = false;
+    // Um pequeno atraso agrupa as três respostas de um quiz num envio só, em
+    // vez de disparar uma requisição por pergunta verificada.
+    const agendado = setTimeout(() => {
+      void (async () => {
+        const atual = store.getSnapshot().state;
+        const alunoId = atual.alunoId;
+        if (!alunoId) return;
+
+        const fila = atual.tentativas.filter((item) => !item.sincronizada).slice(0, TAMANHO_DO_LOTE);
+        if (fila.length === 0 || cancelado) return;
+
+        const { ok } = await enviarTentativas(alunoId, fila);
+        if (!ok || cancelado) return;
+
+        store.update((corrente) => marcarSincronizadas(corrente, fila.map((item) => item.id)));
+      })();
+    }, 1_500);
+
+    return () => {
+      cancelado = true;
+      clearTimeout(agendado);
+    };
+  }, [snapshot.hydrated, pendentes]);
 
   // Sincroniza ao hidratar e a cada mudança de sessão. Diferente da v1, não
   // depende de state.completed/state.projects — aquelas dependências faziam

@@ -199,6 +199,24 @@ export function aplicarTentativa(
   };
 }
 
+/**
+ * Marca como sincronizadas as tentativas que a API confirmou ter recebido.
+ *
+ * Só uma marcação — as linhas continuam no navegador. Apagar o que subiu
+ * deixaria a revisão dependente da rede para saber o que você errou, e a
+ * primeira regra deste produto é que ele funciona com a API fora do ar.
+ */
+export function marcarSincronizadas(state: ProgressState, ids: string[]): ProgressState {
+  if (ids.length === 0) return state;
+  const enviadas = new Set(ids);
+  return {
+    ...state,
+    tentativas: state.tentativas.map((tentativa) =>
+      enviadas.has(tentativa.id) ? { ...tentativa, sincronizada: true } : tentativa,
+    ),
+  };
+}
+
 /** Aplica a conclusão de uma aula, preservando a data original e recalculando a sequência. */
 export function applyCompletion(
   state: ProgressState,

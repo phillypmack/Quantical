@@ -441,3 +441,133 @@ test("sem erro registrado, o painel não inventa diagnóstico", async ({ page })
   await page.goto("/progresso");
   await expect(page.getByRole("heading", { name: /Como sua intuição erra/i })).toHaveCount(0);
 });
+
+/* ---------------------------------------------------------------------------
+   Local primeiro: a API é durabilidade, nunca caminho crítico
+--------------------------------------------------------------------------- */
+
+test("com a API fora do ar, o site inteiro continua funcionando", async ({ page }) => {
+  test.setTimeout(60_000);
+  // Aborta TODA chamada à API — pior caso: nem 500, nem timeout, conexão
+  // recusada. É o cenário de container caído.
+  const chamadas: string[] = [];
+  await page.route("**/api/**", (route) => {
+    chamadas.push(route.request().url());
+    return route.abort("connectionrefused");
+  });
+
+  // 1. A aula responde e conclui.
+  await page.goto("/curso/iniciante/bits-e-qubits/teoria");
+  await page.getByRole("button", { name: /indecisão do qubit é reversível/i }).click();
+  await page.getByRole("button", { name: /64%, porque a probabilidade/i }).click();
+  await page.getByRole("button", { name: /sinal permite que caminhos diferentes se cancelem/i }).click();
+  await page.getByRole("button", { name: /Verificar respostas/i }).click();
+  await expect(page.getByText("3 de 3 · 100%")).toBeVisible();
+
+  // 2. O simulador roda — ele sempre foi 100% local.
+  await page.goto("/laboratorio");
+  await page.getByRole("button", { name: "Executar" }).click();
+  await expect(page.getByText(/Passo 2 de 2/)).toBeVisible();
+
+  // 3. O desafio corrige.
+  await page.goto("/desafios/bell");
+  await page
+    .getByLabel("Seu código Qiskit")
+    .fill("from qiskit import QuantumCircuit\n\nqc = QuantumCircuit(2)\nqc.h(0)\nqc.cx(0, 1)\n");
+  await page.getByRole("button", { name: "Verificar" }).click();
+  await expect(page.getByText("Resolvido.")).toBeVisible();
+
+  // 4. O progresso e o diagnóstico continuam de pé — são locais.
+  await page.goto("/progresso");
+  await expect(page.getByRole("heading", { name: "Do bit ao qubit" })).toBeVisible();
+
+  // 5. A revisão continua sendo decidida no cliente.
+  await page.goto("/revisar");
+  await expect(page.getByRole("heading", { name: /Nada vencido por hoje/i })).toBeVisible();
+
+  // E o mais importante: nada do que falhou virou erro visível para o aluno.
+  // O filtro por texto é necessário porque o Next mantém sempre um
+  // role="alert" vazio na página (o anunciador de rota).
+  await expect(page.getByRole("alert").filter({ hasText: /\S/ })).toHaveCount(0);
+
+  // A API foi mesmo procurada e recusou conexão — o teste não passou por
+  // nunca ter tocado nela. O envio é adiado de propósito para agrupar o lote,
+  // então esperar aqui é parte do comportamento, não folga do teste.
+  await expect.poll(() => chamadas.length, { timeout: 10_000 }).toBeGreaterThan(0);
+
+  await expect(page.getByRole("alert").filter({ hasText: /\S/ })).toHaveCount(0);
+});
+
+test("a tentativa é gravada localmente ANTES de qualquer ida à rede", async ({ page }) => {
+  // Se a ordem fosse a inversa, uma falha de rede custaria o registro do erro
+  // — que é justamente a informação mais valiosa da plataforma.
+  let liberar: () => void = () => {};
+  const rotaPresa = new Promise<void>((resolve) => {
+    liberar = resolve;
+  });
+  await page.route("**/api/tentativas", async (route) => {
+    await rotaPresa;
+    return route.abort("connectionrefused");
+  });
+
+  await page.goto("/curso/iniciante/bits-e-qubits/teoria");
+  await page.getByRole("button", { name: /O qubit sorteia mais rápido/i }).click();
+  await page.getByRole("button", { name: /80%, porque β = 0,8/i }).click();
+  await page.getByRole("button", { name: /apenas uma convenção de notação/i }).click();
+  await page.getByRole("button", { name: /Verificar respostas/i }).click();
+
+  // Com a requisição ainda pendurada, o registro local já tem que estar lá.
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const bruto = window.localStorage.getItem("quantical:progress:v2");
+        return bruto ? JSON.parse(bruto).tentativas.length : 0;
+      }),
+    )
+    .toBe(3);
+
+  liberar();
+
+  // Depois da falha, seguem pendentes — para subirem na próxima oportunidade.
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const bruto = window.localStorage.getItem("quantical:progress:v2");
+        const estado = bruto ? JSON.parse(bruto) : { tentativas: [] };
+        return estado.tentativas.filter((item: { sincronizada?: boolean }) => item.sincronizada)
+          .length;
+      }),
+    )
+    .toBe(0);
+});
+
+test("quando a API responde, as tentativas sobem e ficam marcadas", async ({ page }) => {
+  const corpos: unknown[] = [];
+  await page.route("**/api/tentativas", async (route) => {
+    corpos.push(JSON.parse(route.request().postData() ?? "{}"));
+    return route.fulfill({ json: { gravadas: 3, recebidas: 3 } });
+  });
+
+  await page.goto("/curso/iniciante/bits-e-qubits/teoria");
+  await page.getByRole("button", { name: /indecisão do qubit é reversível/i }).click();
+  await page.getByRole("button", { name: /64%, porque a probabilidade/i }).click();
+  await page.getByRole("button", { name: /sinal permite que caminhos diferentes se cancelem/i }).click();
+  await page.getByRole("button", { name: /Verificar respostas/i }).click();
+
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const bruto = window.localStorage.getItem("quantical:progress:v2");
+        const estado = bruto ? JSON.parse(bruto) : { tentativas: [] };
+        return estado.tentativas.filter((item: { sincronizada?: boolean }) => item.sincronizada)
+          .length;
+      }),
+    )
+    .toBe(3);
+
+  // As três respostas de um quiz sobem num lote só, não numa requisição cada.
+  expect(corpos).toHaveLength(1);
+  const lote = corpos[0] as { alunoId: string; tentativas: unknown[] };
+  expect(lote.tentativas).toHaveLength(3);
+  expect(lote.alunoId).toMatch(/^[0-9a-f-]{36}$/);
+});
