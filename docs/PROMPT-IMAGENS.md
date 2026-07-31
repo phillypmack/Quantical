@@ -1,7 +1,11 @@
-# Prompts de imagem para o Gemini (Nano Banana)
+# Prompts de imagem para o ChatGPT
 
-Documento de trabalho: copie os blocos daqui e cole no Gemini. As imagens
-voltam para `public/images/` com os nomes exatos indicados em cada prompt.
+Documento de trabalho: copie os blocos daqui e cole no ChatGPT, um por vez.
+As imagens voltam para `public/images/` com os nomes exatos indicados.
+
+> A versão anterior deste arquivo era escrita para o Gemini/Nano Banana. Está
+> no histórico do git (`git show 56df417:docs/PROMPT-IMAGENS.md`) caso queira
+> comparar. Quatro coisas mudaram de verdade, e estão explicadas no fim.
 
 ---
 
@@ -20,9 +24,7 @@ aluno se reconhecer ali. Quem demole é o simulador, logo abaixo. Ilustrar a
 demolição enfraqueceria as duas coisas: a metáfora ficaria menos tentadora e
 a quebra viraria alegação em vez de prova.
 
-Isso muda o que se pede ao modelo, e é a instrução mais importante de todas.
-
-## O que a ilustração NUNCA deve conter
+## O que a ilustração nunca deve conter
 
 O site já desenha, nativamente e em SVG, tudo isto — em qualidade melhor,
 interativo e com os dados reais da simulação:
@@ -32,55 +34,53 @@ interativo e com os dados reais da simulação:
 - esferas de Bloch, setas de estado, eixos x/y/z
 
 Pedir isso ao gerador produziria uma cópia pior de algo que já existe, e que
-ficaria ao lado do original na mesma página. **Nada de circuitos, gráficos ou
-esferas.**
+ficaria ao lado do original na mesma página.
 
-E **nenhum texto, letra, número, fórmula ou rótulo dentro da imagem.**
-Geradores erram texto, erram mais ainda em português, e o site já escreve as
-legendas por conta própria.
+E **nenhum texto dentro da imagem**: o site escreve as próprias legendas.
 
 ---
 
-## Bloco de estilo — cole SEMPRE, antes de cada prompt
+## Bloco de estilo — cole em TODA mensagem, antes da cena
+
+O ChatGPT não carrega estilo de uma imagem para a outra com confiabilidade.
+Este bloco vai junto **todas as vezes**, sem encurtar.
 
 ```
-Ilustração editorial para uma plataforma brasileira de ensino de computação
-quântica. Estilo de ilustração de miolo de livro científico bem editado ou
-página de revista impressa — não infográfico, não render 3D, não arte digital
-de ficção científica.
+Gere esta imagem seguindo a descrição literalmente, sem enfeitar, sem
+acrescentar elementos que eu não pedi e sem reinterpretar o estilo.
 
-Traço: desenho vetorial achatado, contornos finos e firmes, formas simples e
-geométricas. Textura sutil de serigrafia ou risografia, com leve granulação de
-papel e pequenos desencontros de registro entre as cores. Sombra chapada, sem
-degradê realista.
+Formato: paisagem (1536x1024).
 
-Paleta ESTRITA, apenas estas cores:
-  fundo   #f5f4ef  (bege quente de papel)
-  traço   #101d3c  (azul-marinho profundo, quase preto)
-  destaque #5d42cc (violeta)
-  apoio   #087d9d  (azul-petróleo)
-  alerta  #9f481f  (laranja queimado)
-Nenhuma outra cor. Sem branco puro, sem preto puro.
+ILUSTRAÇÃO EDITORIAL para o miolo de um livro científico bem editado, ou uma
+página de revista impressa. Desenho vetorial achatado: contornos finos e
+firmes, formas simples e geométricas, sombra chapada em bloco de cor sólida.
+Textura leve de serigrafia, com granulação sutil de papel e pequenos
+desencontros de registro entre as cores, como impressão artesanal.
 
-Composição: muito espaço vazio, um único assunto central, respiro generoso nas
-bordas. Calmo e confiante, nunca poluído.
+Superfícies foscas, iluminação neutra e uniforme, fundo claro de papel.
 
-PROIBIDO: qualquer texto, letra, número ou fórmula. Circuitos, gráficos de
-barras, esferas de Bloch, eixos, setas de coordenadas. Clichês de "quântico":
-esferas azuis brilhantes, néon, brilho de lente, placas de circuito impresso,
-átomos com elétrons em órbita, globos de arame, chuva de dígitos binários,
-partículas cintilantes, fundo escuro espacial.
+Use exatamente estas cinco cores e nenhuma outra:
+  fundo    #f5f4ef  bege quente de papel, cobrindo a imagem inteira
+  traço    #101d3c  azul-marinho profundo
+  destaque #5d42cc  violeta
+  apoio    #087d9d  azul-petróleo
+  alerta   #9f481f  laranja queimado
 
-Formato: 4:3, na maior resolução disponível. Fundo sólido #f5f4ef ocupando
-toda a imagem, sem transparência.
+Composição calma e confiante: um único assunto central, muito espaço vazio,
+respiro generoso nas bordas.
+
+A imagem é inteiramente silenciosa: nenhuma letra, número, palavra, fórmula ou
+rótulo em lugar nenhum.
+
+Evite: circuitos eletrônicos, gráficos, esferas com eixos, átomos com órbitas,
+néon, brilho, degradês luminosos, fundo escuro.
 ```
 
 ---
 
 ## As seis ilustrações
 
-Uma por módulo. O texto entre aspas é a metáfora exata que a aula apresenta —
-está no arquivo da aula, e a ilustração precisa casar com ela.
+Uma por módulo. O texto entre aspas é a metáfora exata que a aula apresenta.
 
 ### 1. `metafora-moeda-girando.png` — Do bit ao qubit
 
@@ -88,14 +88,16 @@ está no arquivo da aula, e a ilustração precisa casar com ela.
 > ela é cara ou coroa; só quando ela cai é que existe um resultado."
 
 ```
-Uma única moeda girando no ar, vista de lado, no ponto mais alto do giro.
-Rastros de movimento em arco sugerem a rotação. A face da moeda está inclinada
-o bastante para não se ver o que há nela — a imagem precisa fazer o observador
-sentir que existe uma face ali, só escondida pela velocidade.
+Cena: uma única moeda girando no ar, vista de lado, no ponto mais alto do giro.
+Arcos finos ao redor sugerem a rotação. A moeda está inclinada de modo que sua
+face não seja visível — quem olha deve sentir que existe uma face ali, apenas
+escondida pela velocidade.
 
-Abaixo, uma superfície de mesa apenas insinuada por uma linha. Nenhuma mão,
-nenhuma pessoa. A moeda em violeta, os rastros em azul-petróleo, a linha da
-mesa em azul-marinho.
+Abaixo, uma superfície de mesa insinuada por uma única linha horizontal.
+Nenhuma pessoa, nenhuma mão.
+
+Moeda em violeta, arcos de movimento em azul-petróleo, linha da mesa em
+azul-marinho.
 ```
 
 *Por que assim:* o aluno precisa sair achando que o valor já existe e só está
@@ -107,21 +109,20 @@ oculto. É esse engano que o experimento H·H derruba em seguida.
 > cinquenta por cento de chance de dar cada resultado."
 
 ```
-Duas jarras de vidro idênticas, lado a lado, cada uma cheia exatamente até a
-metade com um líquido. As duas são visualmente indistinguíveis: mesmo formato,
-mesmo nível, mesma cor.
+Cena: duas jarras de vidro idênticas lado a lado, cada uma cheia exatamente até
+a metade. Mesmo formato, mesmo nível, mesma cor — visualmente indistinguíveis.
 
-Entre elas, uma pequena diferença que só se nota ao olhar de perto — a
-inclinação da superfície do líquido é oposta em cada jarra, uma pendendo para
-a esquerda e a outra para a direita. Nada mais as separa.
+Uma única diferença, discreta o bastante para só se notar de perto: a
+superfície do líquido está inclinada para a esquerda numa jarra e para a
+direita na outra.
 
-Jarras em contorno azul-marinho, líquido em violeta, a superfície inclinada
-marcada em laranja queimado.
+Contorno das jarras em azul-marinho, líquido em violeta, a linha inclinada da
+superfície em laranja queimado.
 ```
 
-*Por que assim:* o módulo derruba exatamente a ideia de que dois estados com o
-mesmo histograma são o mesmo estado. A imagem precisa mostrar dois recipientes
-que qualquer medição diria serem iguais.
+*Por que assim:* o módulo derruba a ideia de que dois estados com o mesmo
+histograma são o mesmo estado. A imagem mostra dois recipientes que qualquer
+medição diria serem iguais.
 
 ### 3. `metafora-envelope-lacrado.png` — Medição
 
@@ -129,13 +130,13 @@ que qualquer medição diria serem iguais.
 > estado, e pronto — como consultar uma variável."
 
 ```
-Um envelope de papel sendo aberto, visto de cima, com o lacre já rompido e uma
-ficha saindo de dentro pela metade. A ficha é lisa, sem nada escrito.
+Cena: um envelope de papel visto de cima, com o lacre já rompido e uma ficha
+lisa saindo pela metade de dentro dele. A ficha é completamente em branco.
 
-A cena precisa transmitir recuperação tranquila: a informação estava guardada
-ali dentro o tempo todo e alguém apenas foi buscá-la. Sem tensão, sem drama.
+O clima é de recuperação tranquila: a informação estava guardada ali o tempo
+todo e alguém apenas foi buscá-la. Sem tensão, sem drama, sem movimento.
 
-Envelope em azul-petróleo, ficha em bege claro com contorno azul-marinho, o
+Envelope em azul-petróleo, ficha em bege de papel com contorno azul-marinho,
 lacre rompido em laranja queimado.
 ```
 
@@ -148,14 +149,14 @@ interação muda o que está lá. A ilustração vende a versão inocente.
 > conjunto, não a ordem."
 
 ```
-Dois botões giratórios de painel, lado a lado, do tipo de aparelho de som
-antigo. Cada um tem uma marca indicando a posição atual. Duas mãos estilizadas,
-reduzidas a contornos simples, giram os dois botões ao mesmo tempo.
+Cena: dois botões giratórios de painel, lado a lado, do tipo encontrado em
+aparelho de som antigo. Cada botão tem um traço marcando sua posição. Duas mãos
+reduzidas a contorno geométrico simples giram os dois ao mesmo tempo.
 
-A composição precisa sugerir simultaneidade e indiferença à ordem: nada indica
-qual veio primeiro, e nada sugere que isso importe.
+A composição deve sugerir simultaneidade: nada indica qual foi girado primeiro,
+e nada sugere que isso faça diferença.
 
-Botões em azul-marinho com marcas em laranja queimado, mãos em contorno
+Botões em azul-marinho, traços de posição em laranja queimado, mãos em contorno
 violeta.
 ```
 
@@ -169,12 +170,12 @@ estados diferentes. A imagem precisa fazer a ordem parecer irrelevante.
 > — porque já eram iguais desde o começo."
 
 ```
-Dois envelopes lacrados idênticos afastando-se um do outro na horizontal, cada
-um para uma borda da imagem, com um rastro tracejado marcando o caminho
-percorrido. Entre eles, muito espaço vazio.
+Cena: dois envelopes lacrados idênticos afastando-se um do outro na horizontal,
+cada um rumo a uma borda da imagem, com um rastro tracejado marcando o caminho
+já percorrido. Entre eles, muito espaço vazio no centro.
 
-Ao fundo, bem discreto, o contorno de duas moedas idênticas dentro dos
-envelopes, sugerindo que o conteúdo já estava decidido antes da partida.
+Dentro de cada envelope, bem discreto, o contorno de uma moeda idêntica à
+outra, sugerindo que o conteúdo já estava decidido antes da partida.
 
 Envelopes em azul-petróleo, rastros tracejados em violeta, moedas insinuadas em
 laranja queimado bem claro.
@@ -190,17 +191,17 @@ explica o que os qubits fazem em outra base.
 > e depois lê as duas respostas de uma vez."
 
 ```
-Uma pessoa reduzida a contorno geométrico simples, sentada, lendo dois livros
-abertos ao mesmo tempo, um em cada mão, com os olhos voltados para os dois.
-A postura é confortável e natural, como se ler duas coisas de uma vez fosse
-trivial.
+Cena: uma pessoa reduzida a contorno geométrico simples, sentada, lendo dois
+livros abertos ao mesmo tempo, um em cada mão, com o olhar dividido entre os
+dois. A postura é confortável e natural, como se ler duas coisas de uma vez
+fosse trivial.
 
 Livros em violeta e azul-petróleo, figura em contorno azul-marinho.
 ```
 
 *Por que assim:* o algoritmo de Deutsch responde uma pergunta sobre as duas
 entradas com **uma** consulta — e não entrega as duas respostas. A imagem
-precisa vender a versão ingênua do paralelismo.
+vende a versão ingênua do paralelismo.
 
 ---
 
@@ -209,39 +210,71 @@ precisa vender a versão ingênua do paralelismo.
 O site declara `twitter:card = summary_large_image` e não tem imagem nenhuma:
 **todo link compartilhado hoje sai em branco.**
 
-### `og-quantical.png` — 1200×630 (proporção 16:9)
+### `og-quantical.png`
 
 ```
-[cole o bloco de estilo acima, trocando o formato para 1200x630]
+[bloco de estilo, mantendo o formato paisagem 1536x1024]
 
-Uma moeda em violeta girando no ar, deslocada para a direita da composição,
-com rastros de movimento em arco. Todo o lado esquerdo permanece vazio, em
-bege de papel, reservado para texto que será sobreposto depois.
+Cena: uma moeda em violeta girando no ar, deslocada para a DIREITA da
+composição, com arcos finos de movimento em azul-petróleo. Todo o terço
+esquerdo permanece completamente vazio, só o bege do papel.
 
-Nada de texto na imagem. Composição horizontal, ampla, com muito respiro.
+Composição horizontal e ampla, com muito respiro.
 ```
+
+O corte final para 1200×630 é mais achatado que o 3:2 que sai do ChatGPT, e
+eu corto no meio na hora de integrar — por isso a instrução de manter o
+assunto longe das bordas de cima e de baixo.
 
 ---
 
-## Como manter as seis parecidas entre si
+## Como rodar
 
-Nano Banana mantém estilo por conversa, não por acaso:
+Uma imagem por mensagem, sempre com o bloco de estilo junto.
 
-1. Gere a **moeda girando** primeiro e itere até gostar do traço.
-2. Nas seguintes, **anexe a imagem aprovada** e peça:
-   *"Mesma técnica, mesma paleta, mesmo peso de traço e mesma granulação desta
-   imagem. Novo assunto: [prompt seguinte]."*
-3. Se o estilo escorregar, volte a colar o bloco de estilo inteiro.
-4. Para ajustar sem recomeçar: *"Mantenha tudo, mude só ___."*
+1. Comece pela **moeda girando** e itere até o traço ficar bom.
+2. Para as seguintes, na **mesma conversa**, cole o bloco de estilo + a cena
+   nova e acrescente: *"No mesmo estilo, traço e paleta da imagem anterior."*
+3. Se o estilo escorregar mesmo assim, comece conversa nova colando o bloco de
+   estilo com a imagem aprovada anexada.
+4. Para corrigir sem recomeçar: *"Mantenha exatamente esta imagem e mude só
+   ___."*
 
 ## Ao entregar
 
-- Formato **PNG**, maior resolução que sair (eu converto para WebP no build).
-- Nomes de arquivo **exatamente** como indicado acima.
-- Coloque em `public/images/`.
+- **PNG**, na resolução que sair.
+- Nomes de arquivo **exatamente** como indicado.
+- Em `public/images/`.
 
 Quando estiverem lá, eu ligo cada uma ao card de metáfora da aula
 correspondente (campo novo `ilustracao` no bloco `metaphor`), com `alt`
-descritivo escrito por mim, `loading="lazy"` e a conversão para WebP — e o
-teste de conteúdo passa a exigir que todo arquivo referenciado exista, do
-mesmo jeito que já exige para os episódios de áudio.
+descritivo escrito por mim, `loading="lazy"` e conversão para WebP — e o teste
+de conteúdo passa a exigir que todo arquivo referenciado exista, do mesmo jeito
+que já exige para os episódios de áudio.
+
+---
+
+## O que mudou em relação à versão do Gemini
+
+Não foi troca de nome. Quatro diferenças de comportamento entre os dois:
+
+**1. Proporção.** O Gemini aceita 4:3 direto. O ChatGPT gera em três formatos
+apenas — quadrado, retrato (1024×1536) e paisagem (1536×1024). Todos os
+pedidos passaram para **paisagem 3:2**, que é o que ele realmente entrega. Uma
+imagem pedida em 4:3 voltaria em outro formato sem aviso.
+
+**2. Lista de proibições.** O Gemini lida bem com uma lista longa de "não
+faça". Modelos da linha do ChatGPT tendem a **invocar o que a negativa
+menciona** — pedir "sem esferas azuis brilhantes" aumenta a chance de vir uma.
+Por isso o bloco agora descreve afirmativamente o que se quer ("superfícies
+foscas, iluminação neutra, fundo claro de papel") e deixa só uma linha curta de
+"evite" no fim.
+
+**3. Reescrita do pedido.** O ChatGPT costuma reescrever e enfeitar o prompt
+antes de gerar. O bloco começa mandando seguir a descrição literalmente e não
+acrescentar elementos.
+
+**4. Consistência entre as seis.** O Nano Banana mantém estilo anexando a
+imagem aprovada. No ChatGPT isso é menos confiável, então o bloco de estilo
+inteiro vai em **toda** mensagem, e o pedido de "mesmo estilo da anterior"
+entra como reforço, não como mecanismo principal.
