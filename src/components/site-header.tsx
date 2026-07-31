@@ -53,6 +53,7 @@ export function SiteHeader() {
                 </Link>
               ))}
               <Link href="/progresso">Meu progresso</Link>
+              <Link href="/revisar">Revisar</Link>
               <Link href="/projetos">Meus projetos</Link>
             </nav>
           </details>

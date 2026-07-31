@@ -3075,7 +3075,9 @@ summary {
 .dashboard-stats {
   margin-top: 55px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* Quatro colunas desde que "conceitos firmes" entrou. Com três, o quarto
+     card caía sozinho numa segunda linha e a faixa ficava torta. */
+  grid-template-columns: repeat(4, 1fr);
   overflow: hidden;
   background: rgba(255, 255, 255, .6);
   border: 1px solid var(--line);
@@ -3093,6 +3095,27 @@ summary {
 
 .dashboard-stats article + article {
   border-left: 1px solid var(--line);
+}
+
+/* Entre o desktop e o corte de 820px, quatro cards ficariam espremidos. */
+@media (max-width: 1000px) and (min-width: 821px) {
+  .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Em duas colunas, a divisória vertical só faz sentido na coluna da
+     direita; entre as linhas ela vira horizontal. */
+  .dashboard-stats article + article {
+    border-left: 0;
+  }
+
+  .dashboard-stats article:nth-child(even) {
+    border-left: 1px solid var(--line);
+  }
+
+  .dashboard-stats article:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
 }
 
 .dashboard-stats svg {

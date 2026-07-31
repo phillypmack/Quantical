@@ -253,6 +253,7 @@ test("as rotas principais não têm violações graves de acessibilidade", async
     "/projetos",
     "/entrar",
     "/audio",
+    "/revisar",
     "/curso/iniciante/bits-e-qubits/teoria",
   ]) {
     await page.goto(path);
@@ -262,4 +263,152 @@ test("as rotas principais não têm violações graves de acessibilidade", async
     );
     expect(blocking, `${path}: ${blocking.map((item) => item.id).join(", ")}`).toEqual([]);
   }
+});
+
+/* ---------------------------------------------------------------------------
+   Revisão espaçada
+--------------------------------------------------------------------------- */
+
+const CHAVE = "quantical:progress:v2";
+
+/** Estado com um conceito vencido e o erro que o produziu, pronto para revisar. */
+const ESTADO_COM_REVISAO_VENCIDA = {
+  version: 2,
+  completed: [],
+  completedAt: {},
+  quizScores: {},
+  streak: 0,
+  projects: [],
+  deletedProjects: {},
+  unlockedOverrides: [],
+  alunoId: "11111111-2222-3333-4444-555555555555",
+  tentativas: [
+    {
+      id: "t1",
+      tipo: "quiz",
+      licaoId: "iniciante/bits-e-qubits/teoria",
+      itemId: "q1",
+      acertou: false,
+      conceitos: ["qubit"],
+      em: "2020-01-01T10:00:00.000Z",
+    },
+  ],
+  // Data no passado: o agendador considera vencido qualquer `proximaEm <= hoje`.
+  revisao: {
+    qubit: { conceitoId: "qubit", forca: 0, proximaEm: "2020-01-02", ultimaEm: "2020-01-01", errosTotais: 1 },
+  },
+};
+
+test("errar o quiz deixa rastro que sobrevive ao 'tentar de novo' e ao reload", async ({ page }) => {
+  // Este é exatamente o defeito que motivou o registro: o retry() fazia
+  // setAnswers({}) e a alternativa errada escolhida desaparecia para sempre.
+  await page.goto("/curso/iniciante/bits-e-qubits/teoria");
+
+  await page.getByRole("button", { name: /O qubit sorteia mais rápido/i }).click();
+  await page.getByRole("button", { name: /80%, porque β = 0,8/i }).click();
+  await page.getByRole("button", { name: /apenas uma convenção de notação/i }).click();
+  await page.getByRole("button", { name: /Verificar respostas/i }).click();
+
+  await expect(page.getByRole("button", { name: /Tentar de novo/i })).toBeVisible();
+
+  const gravado = async () =>
+    page.evaluate((chave) => {
+      const bruto = window.localStorage.getItem(chave);
+      return bruto ? JSON.parse(bruto).tentativas : [];
+    }, CHAVE);
+
+  await expect.poll(async () => (await gravado()).length).toBe(3);
+
+  const erradas = await gravado();
+  expect(erradas.every((item: { acertou: boolean }) => !item.acertou)).toBe(true);
+  expect(erradas.some((item: { detalhe?: { escolha?: string } }) =>
+    item.detalhe?.escolha?.includes("sorteia mais rápido"),
+  )).toBe(true);
+
+  // Refaz acertando: as tentativas antigas continuam lá.
+  await page.getByRole("button", { name: /Tentar de novo/i }).click();
+  await page.getByRole("button", { name: /indecisão do qubit é reversível/i }).click();
+  await page.getByRole("button", { name: /64%, porque a probabilidade/i }).click();
+  await page.getByRole("button", { name: /sinal permite que caminhos diferentes se cancelem/i }).click();
+  await page.getByRole("button", { name: /Verificar respostas/i }).click();
+
+  await expect.poll(async () => (await gravado()).length).toBe(6);
+
+  await page.reload();
+  await expect.poll(async () => (await gravado()).length).toBe(6);
+});
+
+test("a revisão devolve a pergunta exata que o aluno errou", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(
+    ([chave, estado]) => window.localStorage.setItem(chave as string, JSON.stringify(estado)),
+    [CHAVE, ESTADO_COM_REVISAO_VENCIDA] as const,
+  );
+
+  await page.goto("/revisar");
+
+  await expect(page.getByRole("heading", { name: "Qubit", exact: true })).toBeVisible();
+  await expect(
+    page.getByText(/Qual é a diferença essencial entre um qubit e um bit que é sorteado/i),
+  ).toBeVisible();
+
+  // A sessão não pode se desmanchar sob o aluno quando ele responde.
+  await page.getByRole("button", { name: /indecisão do qubit é reversível/i }).click();
+  await page.getByRole("button", { name: /Verificar respostas/i }).click();
+  await expect(page.getByText("1 de 1 · 100%")).toBeVisible();
+  await expect(
+    page.getByText(/Qual é a diferença essencial entre um qubit e um bit que é sorteado/i),
+  ).toBeVisible();
+
+  // Acertar empurra o conceito para frente na agenda.
+  await expect
+    .poll(async () =>
+      page.evaluate((chave) => {
+        const bruto = window.localStorage.getItem(chave);
+        return bruto ? JSON.parse(bruto).revisao.qubit.forca : -1;
+      }, CHAVE),
+    )
+    .toBe(1);
+
+  await page.getByRole("button", { name: /Encerrar revisão/i }).click();
+  await expect(page.getByRole("heading", { name: /Sessão concluída/i })).toBeVisible();
+});
+
+test("sem nada vencido, a revisão explica quando o conceito volta", async ({ page }) => {
+  await page.goto("/revisar");
+  await expect(page.getByRole("heading", { name: /Nada vencido por hoje/i })).toBeVisible();
+  await expect(page.getByText(/A revisão nasce dos seus erros/i)).toBeVisible();
+  // Sem revisão pendente, o aviso não aparece em lugar nenhum.
+  await page.goto("/progresso");
+  await expect(page.locator(".revisao-aviso")).toHaveCount(0);
+});
+
+test("o aviso de revisão aparece na home e leva para a sessão", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(
+    ([chave, estado]) => window.localStorage.setItem(chave as string, JSON.stringify(estado)),
+    [CHAVE, ESTADO_COM_REVISAO_VENCIDA] as const,
+  );
+  await page.goto("/");
+
+  const aviso = page.locator(".revisao-aviso");
+  await expect(aviso).toContainText("1 conceito para revisar");
+  await aviso.click();
+  await expect(page).toHaveURL(/\/revisar/);
+});
+
+test("a sessão de revisão não tem violações graves de acessibilidade", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(
+    ([chave, estado]) => window.localStorage.setItem(chave as string, JSON.stringify(estado)),
+    [CHAVE, ESTADO_COM_REVISAO_VENCIDA] as const,
+  );
+  await page.goto("/revisar");
+  await expect(page.getByRole("heading", { name: "Qubit", exact: true })).toBeVisible();
+
+  const results = await new AxeBuilder({ page }).analyze();
+  const blocking = results.violations.filter(
+    (violation) => violation.impact === "critical" || violation.impact === "serious",
+  );
+  expect(blocking, blocking.map((item) => item.id).join(", ")).toEqual([]);
 });

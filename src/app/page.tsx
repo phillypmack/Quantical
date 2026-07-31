@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { HadamardDemo } from "@/components/hadamard-demo";
+import { AvisoDeRevisao } from "@/components/revisao-sessao";
 import { tracks, totalLessons } from "@/data/curriculum";
 
 export default function HomePage() {
@@ -41,6 +42,9 @@ export default function HomePage() {
               <span><Check size={14} /> Sem pré-requisitos</span>
               <span><Check size={14} /> Gratuito para começar</span>
             </div>
+            {/* Só aparece para quem já errou algo: quem chega pela primeira vez
+                não vê promessa de revisão que não tem o que revisar. */}
+            <AvisoDeRevisao />
           </div>
           <div className="hero-visual">
             <div className="hero-orbit hero-orbit--one" />

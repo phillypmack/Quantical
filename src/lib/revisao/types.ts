@@ -41,9 +41,3 @@ export type Revisao = {
   /** Quantas vezes o aluno errou algo deste conceito, ao todo. */
   errosTotais: number;
 };
-
-/** O que a fila de revisão devolve para a tela montar. */
-export type ItemDeRevisao =
-  | { tipo: "quiz"; conceitoId: string; licaoId: string; questaoId: string }
-  | { tipo: "previsao"; conceitoId: string; licaoId: string; passoId: string }
-  | { tipo: "exercicio"; conceitoId: string; licaoId: string };

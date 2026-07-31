@@ -5,6 +5,7 @@ import {
   ArrowRight,
   Award,
   BookMarked,
+  BrainCircuit,
   Flame,
   Medal,
   Sparkles,
@@ -13,6 +14,8 @@ import {
 } from "lucide-react";
 
 import { getAllLessons, getModuleLessons, totalLessons, tracks } from "@/data/curriculum";
+import { consolidados } from "@/lib/revisao/agenda";
+import { AvisoDeRevisao } from "./revisao-sessao";
 import { useProgress } from "./progress-provider";
 
 const achievementList = [
@@ -23,12 +26,15 @@ const achievementList = [
 ];
 
 export function ProgressDashboard() {
-  const { completed, streak, lastLesson, hydrated, quizScores } = useProgress();
+  const { completed, streak, lastLesson, hydrated, quizScores, revisao } = useProgress();
   const allLessons = getAllLessons();
   const last = allLessons.find((lesson) => lesson.id === lastLesson);
   const average = Object.values(quizScores).length
     ? Math.round(Object.values(quizScores).reduce((sum, value) => sum + value, 0) / Object.values(quizScores).length)
     : 0;
+  // Conceitos firmes valem mais que aulas concluídas: concluir é passar por
+  // cima, firmar é acertar de novo depois de dias sem ver o assunto.
+  const firmes = hydrated ? consolidados(revisao).length : 0;
 
   return (
     <div className="dashboard">
@@ -49,7 +55,10 @@ export function ProgressDashboard() {
         <article><BookMarked size={18} /><strong>{completed.length}</strong><span>de {totalLessons} aulas</span></article>
         <article><Target size={18} /><strong>{Math.round((completed.length / totalLessons) * 100)}%</strong><span>do currículo</span></article>
         <article><Award size={18} /><strong>{average}%</strong><span>média nos quizzes</span></article>
+        <article><BrainCircuit size={18} /><strong>{firmes}</strong><span>conceitos firmes</span></article>
       </section>
+
+      <AvisoDeRevisao />
 
       {last ? (
         <section className="continue-card">

@@ -641,3 +641,126 @@
   .episode-controles { gap: 8px; }
   .episode-tempo { min-width: 34px; font-size: 0.72rem; }
 }
+
+/* ---------------------------------------------------------------------------
+   Revisão espaçada
+
+   A tela é deliberadamente estreita e sem distração: o aluno chega aqui para
+   reencontrar UM conceito por vez, não para navegar. Toda a mecânica interna
+   (quiz, portão de previsão, bancada) vem dos componentes originais e traz o
+   próprio estilo junto — daqui sai só a moldura.
+--------------------------------------------------------------------------- */
+.revisao {
+  width: min(820px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 72px 0 110px;
+}
+
+.revisao-carregando { color: var(--ink-soft); font-size: 0.92rem; }
+
+.revisao-header h1 {
+  margin: 0 0 10px;
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.revisao-header > p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.revisao-header > p a { color: var(--violet); text-decoration: underline; }
+
+.revisao-progresso {
+  display: flex;
+  gap: 6px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.revisao-progresso li {
+  height: 4px;
+  flex: 1;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.revisao-progresso li.is-done { background: var(--green); }
+.revisao-progresso li.is-current { background: var(--violet); }
+
+.revisao-definicao {
+  margin: 26px 0 0;
+  padding: 16px 18px;
+  border-left: 3px solid var(--violet);
+  background: var(--violet-pale);
+  border-radius: 0 12px 12px 0;
+  color: var(--ink);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.revisao-item { margin-top: 30px; }
+
+.revisao-acoes {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 34px;
+  padding-top: 26px;
+  border-top: 1px solid var(--line);
+}
+
+.revisao-pular { color: var(--ink-soft); font-size: 0.82rem; }
+
+.revisao-vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: 30px;
+  padding: 34px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-bright);
+}
+
+.revisao-vazio p { margin: 0; color: var(--ink-soft); font-size: 0.98rem; line-height: 1.65; }
+.revisao-vazio p strong { color: var(--ink); }
+.revisao-vazio small { color: var(--ink-soft); font-size: 0.82rem; line-height: 1.55; }
+.revisao-vazio svg { color: var(--violet); }
+
+/* Aviso reaproveitado na home e no painel. */
+.revisao-aviso {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border: 1px solid var(--violet);
+  border-radius: 999px;
+  background: var(--violet-pale);
+  color: var(--violet);
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+
+.revisao-aviso strong { font-weight: 600; }
+
+.revisao-aviso span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+
+.revisao-aviso:hover { background: #ded6ff; }
+
+@media (max-width: 640px) {
+  .revisao { width: calc(100% - 32px); padding: 48px 0 80px; }
+  .revisao-vazio { padding: 24px; }
+}
