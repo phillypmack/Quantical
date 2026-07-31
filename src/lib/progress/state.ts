@@ -1,7 +1,18 @@
+import { registrar } from "@/lib/revisao/agenda";
+import type { Revisao, Tentativa } from "@/lib/revisao/types";
 import type { ProgressState, SavedProject } from "./types";
 
 export const STORAGE_KEY = "quantical:progress:v2";
 export const LEGACY_STORAGE_KEY = "quantical:progress:v1";
+
+/**
+ * Teto de tentativas guardadas no navegador.
+ *
+ * O que importa para a revisão é o passado recente; e o localStorage tem
+ * cota. As antigas são descartadas depois de sincronizadas — o histórico
+ * completo vive no servidor, não aqui.
+ */
+export const MAX_TENTATIVAS = 400;
 
 export const emptyState: ProgressState = {
   version: 2,
@@ -12,6 +23,8 @@ export const emptyState: ProgressState = {
   projects: [],
   deletedProjects: {},
   unlockedOverrides: [],
+  tentativas: [],
+  revisao: {},
 };
 
 /**
@@ -78,6 +91,51 @@ function parseProject(value: unknown): SavedProject | null {
   };
 }
 
+function parseTentativa(value: unknown): Tentativa | null {
+  if (!isRecord(value)) return null;
+  const { id, tipo, licaoId, itemId, acertou, conceitos, equivocoId, detalhe, em, sincronizada } =
+    value;
+  if (typeof id !== "string" || typeof licaoId !== "string" || typeof itemId !== "string") {
+    return null;
+  }
+  if (tipo !== "quiz" && tipo !== "previsao" && tipo !== "exercicio") return null;
+  if (typeof acertou !== "boolean" || typeof em !== "string") return null;
+
+  return {
+    id,
+    tipo,
+    licaoId,
+    itemId,
+    acertou,
+    conceitos: stringArray(conceitos),
+    equivocoId: typeof equivocoId === "string" ? equivocoId : undefined,
+    detalhe: isRecord(detalhe) ? detalhe : undefined,
+    em,
+    sincronizada: sincronizada === true,
+  };
+}
+
+function parseRevisao(value: unknown): Record<string, Revisao> {
+  if (!isRecord(value)) return {};
+  const result: Record<string, Revisao> = {};
+  for (const [conceitoId, entry] of Object.entries(value)) {
+    if (!isRecord(entry)) continue;
+    const { forca, proximaEm, ultimaEm, errosTotais } = entry;
+    if (typeof proximaEm !== "string") continue;
+    result[conceitoId] = {
+      conceitoId,
+      forca: typeof forca === "number" && Number.isFinite(forca) ? Math.max(0, Math.floor(forca)) : 0,
+      proximaEm,
+      ultimaEm: typeof ultimaEm === "string" ? ultimaEm : undefined,
+      errosTotais:
+        typeof errosTotais === "number" && Number.isFinite(errosTotais)
+          ? Math.max(0, Math.floor(errosTotais))
+          : 0,
+    };
+  }
+  return result;
+}
+
 /**
  * Valida o que veio do localStorage antes de deixar entrar no app.
  *
@@ -115,6 +173,29 @@ export function parseProgressState(input: unknown): ProgressState {
     deletedProjects: stringMap(input.deletedProjects),
     resetAt: typeof input.resetAt === "string" ? input.resetAt : undefined,
     unlockedOverrides: Array.from(new Set(stringArray(input.unlockedOverrides))),
+    alunoId: typeof input.alunoId === "string" ? input.alunoId : undefined,
+    tentativas: Array.isArray(input.tentativas)
+      ? input.tentativas
+          .map(parseTentativa)
+          .filter((tentativa): tentativa is Tentativa => tentativa !== null)
+          .slice(0, MAX_TENTATIVAS)
+      : [],
+    revisao: parseRevisao(input.revisao),
+  };
+}
+
+/** Acrescenta uma tentativa e reagenda os conceitos que ela toca. */
+export function aplicarTentativa(
+  state: ProgressState,
+  tentativa: Tentativa,
+  now: Date = new Date(),
+): ProgressState {
+  const hoje = studyDate(now);
+  return {
+    ...state,
+    // Mais recente primeiro, para o corte por MAX_TENTATIVAS descartar o velho.
+    tentativas: [tentativa, ...state.tentativas].slice(0, MAX_TENTATIVAS),
+    revisao: registrar(state.revisao, tentativa, hoje),
   };
 }
 

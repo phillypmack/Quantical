@@ -126,12 +126,14 @@ export const superposicao: Lesson[] = [
             correct: false,
             explanation:
               "Se fossem a mesma coisa, |+⟩ e |−⟩ seriam o mesmo estado — e uma Hadamard os leva a resultados opostos.",
+            equivoco: "amplitude-e-probabilidade",
           },
           {
             text: "A amplitude vale de 0 a 100 e a probabilidade vale de 0 a 1.",
             correct: false,
             explanation:
               "Não é questão de escala. A diferença é que a amplitude carrega sinal e a probabilidade não.",
+            equivoco: "amplitude-e-probabilidade",
           },
         ],
       },
@@ -150,6 +152,7 @@ export const superposicao: Lesson[] = [
             correct: false,
             explanation:
               "Essa é a conclusão que a aula desmonta. O histograma é o resultado de UMA pergunta, não a identidade do estado.",
+            equivoco: "probabilidade-e-o-estado",
           },
           {
             text: "Que ambos estão emaranhados.",
@@ -174,6 +177,7 @@ export const superposicao: Lesson[] = [
             correct: false,
             explanation:
               "Faz muita diferença sobre |+⟩: Z leva |+⟩ para |−⟩, e aí a Hadamard seguinte dá o resultado oposto.",
+            equivoco: "fase-nao-tem-efeito",
           },
           {
             text: "Porque Z age só sobre qubits emaranhados.",
@@ -276,7 +280,7 @@ export const superposicao: Lesson[] = [
             states: ["0", "1"],
             choices: [
               { id: "meio", label: "Metade de cada", distribution: { "0": 0.5, "1": 0.5 } },
-              { id: "zero", label: "Sempre 0, igual ao passo anterior", distribution: { "0": 1, "1": 0 } },
+              { id: "zero", label: "Sempre 0, igual ao passo anterior", distribution: { "0": 1, "1": 0 }, equivoco: "probabilidade-e-o-estado" },
               { id: "um", label: "Sempre 1", distribution: { "0": 0, "1": 1 } },
             ],
           },
@@ -325,6 +329,7 @@ export const superposicao: Lesson[] = [
             correct: false,
             explanation:
               "Não há erro nenhum aqui: o resultado é exatamente 100%, e é o que a matemática prevê.",
+            equivoco: "histograma-e-exato",
           },
         ],
       },

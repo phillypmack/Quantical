@@ -134,6 +134,7 @@ export const primeiroCircuito: Lesson[] = [
             correct: false,
             explanation:
               "Não revela nenhum dos dois. As duas funções balanceadas produzem histogramas idênticos.",
+            equivoco: "testa-tudo-ao-mesmo-tempo",
           },
           {
             text: "Qual das quatro funções possíveis está sendo usada.",
@@ -158,12 +159,14 @@ export const primeiroCircuito: Lesson[] = [
             correct: false,
             explanation:
               "O auxiliar termina em |−⟩ como começou, e medi-lo não informa nada útil. Ele serve para converter o valor da função em fase.",
+            equivoco: "testa-tudo-ao-mesmo-tempo",
           },
           {
             text: "Duplicar o qubit de consulta para permitir duas medições.",
             correct: false,
             explanation:
               "Copiar um estado quântico é impossível, e o circuito não tenta isso.",
+            equivoco: "testa-tudo-ao-mesmo-tempo",
           },
         ],
       },
@@ -182,6 +185,7 @@ export const primeiroCircuito: Lesson[] = [
             correct: false,
             explanation:
               "Não existe ruído aqui: o resultado é exato. O papel dela é revelar uma informação que estava invisível.",
+            equivoco: "fase-nao-tem-efeito",
           },
         ],
       },
@@ -291,7 +295,7 @@ export const primeiroCircuito: Lesson[] = [
               {
                 id: "q0-zero",
                 label: "Agora q0 sempre 0",
-                distribution: { "00": 0.5, "01": 0, "10": 0.5, "11": 0 },
+                distribution: { "00": 0.5, "01": 0, "10": 0.5, "11": 0 }, equivoco: "testa-tudo-ao-mesmo-tempo",
               },
               {
                 id: "todos",
@@ -341,6 +345,7 @@ export const primeiroCircuito: Lesson[] = [
             correct: false,
             explanation:
               "Os circuitos são diferentes e o simulador os executa diferentemente. O que coincide é só o resultado da medição em q0.",
+            equivoco: "testa-tudo-ao-mesmo-tempo",
           },
         ],
       },
@@ -359,6 +364,7 @@ export const primeiroCircuito: Lesson[] = [
             correct: false,
             explanation:
               "O oráculo é aplicado normalmente. O que falta é a porta que traz o efeito dele para a medição.",
+            equivoco: "fase-nao-tem-efeito",
           },
         ],
       },

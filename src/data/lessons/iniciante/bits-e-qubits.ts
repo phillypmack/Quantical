@@ -135,6 +135,7 @@ export const bitsEQubits: Lesson[] = [
             correct: false,
             explanation:
               "Essa é a confusão mais comum do assunto: β é a amplitude, não a probabilidade. Só depois de elevar ao quadrado se chega na chance.",
+            equivoco: "amplitude-e-probabilidade",
           },
           {
             text: "50%, porque só existem dois resultados possíveis.",
@@ -159,12 +160,14 @@ export const bitsEQubits: Lesson[] = [
             correct: false,
             explanation:
               "Probabilidade nunca é negativa. Quem pode ser negativo é a amplitude; o quadrado dela volta a ser positivo.",
+            equivoco: "amplitude-e-probabilidade",
           },
           {
             text: "É apenas uma convenção de notação, sem efeito físico.",
             correct: false,
             explanation:
               "Tem efeito, e enorme: o sinal é justamente o que faz duas possibilidades se anularem.",
+            equivoco: "fase-nao-tem-efeito",
           },
         ],
       },
@@ -282,7 +285,7 @@ export const bitsEQubits: Lesson[] = [
             question: "Depois de dois H, como fica a distribuição?",
             states: ["0", "1"],
             choices: [
-              { id: "meio-meio", label: "Continua 50/50", distribution: { "0": 0.5, "1": 0.5 } },
+              { id: "meio-meio", label: "Continua 50/50", distribution: { "0": 0.5, "1": 0.5 }, equivoco: "h-e-sorteio" },
               { id: "tudo-zero", label: "Volta a ser sempre 0", distribution: { "0": 1, "1": 0 } },
               { id: "tudo-um", label: "Passa a ser sempre 1", distribution: { "0": 0, "1": 1 } },
             ],
@@ -318,12 +321,14 @@ export const bitsEQubits: Lesson[] = [
             correct: false,
             explanation:
               "Sorteios não se cancelam: dois lançamentos de moeda continuam dando 50/50. O resultado aqui foi 100%, o que descarta a explicação por acaso.",
+            equivoco: "h-e-sorteio",
           },
           {
             text: "Porque o simulador arredonda o resultado para o estado mais provável.",
             correct: false,
             explanation:
               "Não há arredondamento. A amplitude de |1⟩ é exatamente zero: os dois caminhos que levariam a 1 se cancelam.",
+            equivoco: "histograma-e-exato",
           },
         ],
       },
@@ -348,6 +353,7 @@ export const bitsEQubits: Lesson[] = [
             correct: false,
             explanation:
               "A probabilidade teórica é exata. A variação vem da amostragem, e é justamente o que acontece em hardware real.",
+            equivoco: "histograma-e-exato",
           },
         ],
       },

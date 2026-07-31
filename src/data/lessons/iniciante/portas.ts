@@ -150,6 +150,7 @@ export const portas: Lesson[] = [
             correct: false,
             explanation:
               "Não é: aplicada a |+⟩, Z produz |−⟩, que é um estado bem diferente.",
+            equivoco: "fase-nao-tem-efeito",
           },
         ],
       },
@@ -192,12 +193,14 @@ export const portas: Lesson[] = [
             correct: false,
             explanation:
               "Todas podem ser combinadas. O que muda é que a ordem faz parte do resultado.",
+            equivoco: "ordem-nao-importa",
           },
           {
             text: "Que a ordem só importa quando há mais de um qubit.",
             correct: false,
             explanation:
               "Este módulo inteiro trata de um único qubit, e a ordem já importa.",
+            equivoco: "ordem-nao-importa",
           },
         ],
       },
@@ -288,7 +291,7 @@ export const portas: Lesson[] = [
             question: "E com a ordem trocada?",
             states: ["0", "1"],
             choices: [
-              { id: "zero", label: "Igual ao anterior: certeza no 0", distribution: { "0": 1, "1": 0 } },
+              { id: "zero", label: "Igual ao anterior: certeza no 0", distribution: { "0": 1, "1": 0 }, equivoco: "ordem-nao-importa" },
               { id: "meio", label: "Metade de cada", distribution: { "0": 0.5, "1": 0.5 } },
               { id: "um", label: "Certeza no 1", distribution: { "0": 0, "1": 1 } },
             ],
@@ -346,6 +349,7 @@ export const portas: Lesson[] = [
             correct: false,
             explanation:
               "Não se cancelam: na ordem inversa as duas juntas produziram um estado bem diferente.",
+            equivoco: "ordem-nao-importa",
           },
         ],
       },
@@ -364,6 +368,7 @@ export const portas: Lesson[] = [
             correct: false,
             explanation:
               "Não são: com a Hadamard no fim, um dá certeza e o outro dá sorteio.",
+            equivoco: "probabilidade-e-o-estado",
           },
         ],
       },

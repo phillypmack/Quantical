@@ -10,7 +10,8 @@ import {
   type ReactNode,
 } from "react";
 
-import { applyCompletion, emptyState } from "@/lib/progress/state";
+import { aplicarTentativa, applyCompletion, emptyState } from "@/lib/progress/state";
+import type { Tentativa, TipoTentativa } from "@/lib/revisao/types";
 import * as store from "@/lib/progress/store";
 import { synchronize } from "@/lib/progress/sync";
 import type { ProgressState, SavedProject, SyncStatus } from "@/lib/progress/types";
@@ -27,6 +28,18 @@ type ProgressContextValue = ProgressState & {
   removeProject: (id: string) => void;
   resetProgress: () => void;
   setUnlockOverride: (moduleId: string) => void;
+  registrarTentativa: (tentativa: NovaTentativa) => void;
+};
+
+/** O que o componente informa; id e horário são preenchidos aqui. */
+export type NovaTentativa = {
+  tipo: TipoTentativa;
+  licaoId: string;
+  itemId: string;
+  acertou: boolean;
+  conceitos: string[];
+  equivocoId?: string;
+  detalhe?: Record<string, unknown>;
 };
 
 const ProgressContext = createContext<ProgressContextValue | null>(null);
@@ -89,6 +102,21 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
         current.projects.map((project) => [project.id, resetAt]),
       ),
     }));
+  }, []);
+
+  const registrarTentativa = useCallback((nova: NovaTentativa) => {
+    const tentativa: Tentativa = {
+      ...nova,
+      id: crypto.randomUUID(),
+      em: new Date().toISOString(),
+      sincronizada: false,
+    };
+    store.update((current) => {
+      // O id de aluno nasce na primeira tentativa: sem atividade não há o que
+      // identificar, e criá-lo antes seria rastrear quem só passou pelo site.
+      const comAluno = current.alunoId ? current : { ...current, alunoId: crypto.randomUUID() };
+      return aplicarTentativa(comAluno, tentativa);
+    });
   }, []);
 
   const setUnlockOverride = useCallback((moduleId: string) => {
@@ -160,8 +188,17 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
       removeProject,
       resetProgress,
       setUnlockOverride,
+      registrarTentativa,
     }),
-    [snapshot, completeLesson, saveProject, removeProject, resetProgress, setUnlockOverride],
+    [
+      snapshot,
+      completeLesson,
+      saveProject,
+      removeProject,
+      resetProgress,
+      setUnlockOverride,
+      registrarTentativa,
+    ],
   );
 
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;

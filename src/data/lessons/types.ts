@@ -28,12 +28,25 @@ export type QuestionOption = {
   correct: boolean;
   /** Por que esta alternativa está certa ou errada. Obrigatória em todas. */
   explanation: string;
+  /**
+   * O equívoco que escolher esta alternativa revela (id em `data/equivocos`).
+   *
+   * É o que permite o site dizer "você tende a pensar X" em vez de só "errou".
+   * Só faz sentido em alternativa incorreta, e só quando o erro tem uma causa
+   * identificável — distrator genérico fica sem marcação.
+   */
+  equivoco?: string;
 };
 
 export type Question = {
   id: string;
   prompt: string;
   options: QuestionOption[];
+  /**
+   * Conceitos que a pergunta exercita, para a revisão espaçada agendar.
+   * Sem isto, valem os `glossaryRefs` da aula inteira.
+   */
+  conceitos?: string[];
 };
 
 export type Lesson = {

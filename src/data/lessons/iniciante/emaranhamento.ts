@@ -135,12 +135,14 @@ export const emaranhamento: Lesson[] = [
             correct: false,
             explanation:
               "As moedas preparadas iguais também dão sempre resultados iguais. Na medição padrão os dois casos são indistinguíveis.",
+            equivoco: "moedas-correlacionadas",
           },
           {
             text: "O par de Bell transmite informação instantaneamente entre os dois qubits.",
             correct: false,
             explanation:
               "Não transmite. Olhando só um dos qubits você vê ruído puro; a correlação só aparece ao comparar os dois resultados, e comparar exige comunicação comum.",
+            equivoco: "emaranhamento-transmite",
           },
         ],
       },
@@ -165,6 +167,7 @@ export const emaranhamento: Lesson[] = [
             correct: false,
             explanation:
               "É mais forte que ignorância: não existe estado individual a ser descoberto. Foi exatamente essa a diferença testada pela troca de base.",
+            equivoco: "qubit-emaranhado-tem-estado",
           },
         ],
       },
@@ -183,6 +186,7 @@ export const emaranhamento: Lesson[] = [
             correct: false,
             explanation:
               "Copiar um estado quântico desconhecido é impossível. O que a CNOT faz é correlacionar, não duplicar — e o resultado é justamente que nenhum dos dois tem valor próprio.",
+            equivoco: "qubit-emaranhado-tem-estado",
           },
         ],
       },
@@ -276,7 +280,7 @@ export const emaranhamento: Lesson[] = [
               {
                 id: "todos",
                 label: "Os quatro iguais: a correlação se perde",
-                distribution: { "00": 0.25, "01": 0.25, "10": 0.25, "11": 0.25 },
+                distribution: { "00": 0.25, "01": 0.25, "10": 0.25, "11": 0.25 }, equivoco: "moedas-correlacionadas",
               },
               {
                 id: "correlacionado",
@@ -331,6 +335,7 @@ export const emaranhamento: Lesson[] = [
             correct: false,
             explanation:
               "Se apagasse informação, o resultado seria aleatório. Aconteceu o contrário: a correlação continuou perfeita.",
+            equivoco: "moedas-correlacionadas",
           },
         ],
       },
@@ -409,6 +414,7 @@ export const emaranhamento: Lesson[] = [
             correct: false,
             explanation:
               "A troca de base testaria isso do mesmo jeito, e a correlação sobreviveria. É emaranhamento tanto quanto o outro par.",
+            equivoco: "moedas-correlacionadas",
           },
         ],
       },

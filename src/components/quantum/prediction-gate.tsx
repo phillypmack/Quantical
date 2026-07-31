@@ -24,8 +24,18 @@ export type PredictionSpec = {
   question: string;
   /** Estados da base envolvidos, na ordem em que aparecem. */
   states: string[];
-  /** Só para `choice`: alternativas de histograma desenhadas. */
-  choices?: { id: string; label: string; distribution: Record<string, number> }[];
+  /**
+   * Só para `choice`: alternativas de histograma desenhadas.
+   *
+   * `equivoco` marca o palpite que revela um engano nomeado — é assim que um
+   * palpite errado vira "você tende a pensar que H sorteia" em vez de sumir.
+   */
+  choices?: {
+    id: string;
+    label: string;
+    distribution: Record<string, number>;
+    equivoco?: string;
+  }[];
 };
 
 export type Prediction = Record<string, number>;
@@ -42,9 +52,17 @@ export function scorePrediction(prediction: Prediction, actual: Record<string, n
   return { worst, sharp: worst <= PREDICTION_TOLERANCE };
 }
 
+/**
+ * Qual alternativa foi escolhida — não só a distribuição resultante.
+ *
+ * Duas alternativas podem produzir a mesma distribuição por caminhos de
+ * raciocínio diferentes; sem o id, o equívoco por trás do palpite se perde.
+ */
+export type EscolhaPrevisao = { id: string; equivoco?: string };
+
 type PredictionGateProps = {
   spec: PredictionSpec;
-  onCommit: (prediction: Prediction) => void;
+  onCommit: (prediction: Prediction, escolha?: EscolhaPrevisao) => void;
   committed?: Prediction;
 };
 
@@ -162,7 +180,11 @@ export function PredictionGate({ spec, onCommit, committed }: PredictionGateProp
         <button
           className="button button--dark button--small"
           disabled={!prediction}
-          onClick={() => prediction && onCommit(prediction)}
+          onClick={() => {
+            if (!prediction) return;
+            const option = spec.choices?.find((item) => item.id === choice);
+            onCommit(prediction, option && { id: option.id, equivoco: option.equivoco });
+          }}
           type="button"
         >
           Registrar palpite

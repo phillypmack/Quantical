@@ -5,6 +5,7 @@ import { Check, Eye, Lightbulb, Play, RotateCcw, X } from "lucide-react";
 
 import { cn } from "@/lib/cn";
 import { validateExercise, type Exercise, type ValidationResult } from "@/lib/quantum/validator";
+import { useProgress } from "@/components/progress-provider";
 import { ResultPanel } from "./result-panel";
 
 /**
@@ -16,11 +17,17 @@ export function ExerciseWorkbench({
   exercise,
   onSolved,
   solved = false,
+  licaoId,
+  conceitos = [],
 }: {
   exercise: Exercise;
   onSolved?: () => void;
   solved?: boolean;
+  /** Para registrar quais asserções falharam. Sem isto, some ao recarregar. */
+  licaoId?: string;
+  conceitos?: string[];
 }) {
+  const { registrarTentativa } = useProgress();
   const [code, setCode] = useState(exercise.starterCode);
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [attempts, setAttempts] = useState(0);
@@ -31,8 +38,28 @@ export function ExerciseWorkbench({
     const validation = validateExercise(code, exercise);
     setResult(validation);
     setAttempts((value) => value + 1);
+
+    // Erro de sintaxe não é erro de conceito. Registrar um `if` escrito errado
+    // como "não entendeu superposição" zeraria a força do conceito por um
+    // typo, e a revisão passaria a cobrar o que o aluno já sabe.
+    if (licaoId && validation.checks.length > 0) {
+      const falhas = validation.checks.filter((item) => !item.passed);
+      registrarTentativa({
+        tipo: "exercicio",
+        licaoId,
+        itemId: exercise.id,
+        acertou: validation.passed,
+        conceitos,
+        detalhe: {
+          // `kind` é o que agrega entre alunos; `label` é só para ler depois.
+          falhas: falhas.map((item) => ({ kind: item.kind, label: item.label })),
+          tentativa: attempts + 1,
+        },
+      });
+    }
+
     if (validation.passed) onSolved?.();
-  }, [code, exercise, onSolved]);
+  }, [code, exercise, onSolved, licaoId, conceitos, attempts, registrarTentativa]);
 
   // "Ver solução" libera após três tentativas — ou a pedido, sem julgamento.
   const canReveal = attempts >= 3 || hintsShown >= exercise.hints.length;

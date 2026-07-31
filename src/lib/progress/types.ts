@@ -1,4 +1,5 @@
 import type { Circuit } from "@/lib/quantum/types";
+import type { Revisao, Tentativa } from "@/lib/revisao/types";
 
 export type SavedProject = {
   id: string;
@@ -29,6 +30,25 @@ export type ProgressState = {
   resetAt?: string;
   /** Módulos que o aluno abriu apesar da recomendação (travas suaves). */
   unlockedOverrides: string[];
+
+  /**
+   * Identidade anônima do dispositivo. Existe só para a API conseguir juntar
+   * as tentativas do mesmo aluno — não pede conta nem e-mail, coerente com o
+   * "Continuar sem conta" que o site oferece desde sempre.
+   */
+  alunoId?: string;
+
+  /**
+   * Tentativas registradas, das mais recentes para as mais antigas.
+   *
+   * Antes disso, errar não deixava rastro: o `retry()` do quiz apagava as
+   * respostas e a previsão errada era descartada ao navegar. Limitada em
+   * `MAX_TENTATIVAS` para o localStorage não crescer sem fim.
+   */
+  tentativas: Tentativa[];
+
+  /** Agenda de revisão espaçada, por conceito. */
+  revisao: Record<string, Revisao>;
 };
 
 export type SyncStatus = "idle" | "syncing" | "synced" | "error" | "offline";

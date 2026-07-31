@@ -19,6 +19,9 @@ export function ChallengeWorkbench({ challenge }: { challenge: Challenge }) {
   return (
     <ExerciseWorkbench
       exercise={challenge.exercise}
+      // Sem `conceitos`: o desafio não declara termos do glossário, então ele
+      // alimenta o histórico e o agregado, mas não agenda revisão.
+      licaoId={progressId}
       onSolved={() => {
         setJustSolved(true);
         completeLesson(progressId, 100);

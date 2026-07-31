@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import { episodios } from "./audio";
 import { challenges } from "./challenges";
+import { equivocos, equivocosPorId } from "./equivocos";
 import { getModuleLessons, getAllLessons, totalLessons, tracks } from "./curriculum";
 import { glossary, glossaryById } from "./glossary";
 import { authoredModules, lessons } from "./lessons";
@@ -161,6 +162,91 @@ describe("aulas escritas", () => {
       expect(stages.map((lesson) => lesson.stage).sort()).toEqual(["desafio", "experimento", "teoria"]);
     }
   });
+});
+
+describe("taxonomia de equívocos", () => {
+  it("os ids são únicos", () => {
+    const ids = equivocos.map((equivoco) => equivoco.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it.each(equivocos.map((e) => [e.id, e] as const))(
+    "%s: a demolição aponta para uma aula que existe",
+    (_id, equivoco) => {
+      const licao = lessons.find((item) => item.id === equivoco.demolicao.licaoId);
+      expect(licao, equivoco.demolicao.licaoId).toBeDefined();
+
+      // Se cita um passo, ele precisa existir no roteiro guiado daquela aula.
+      if (equivoco.demolicao.passoId) {
+        const passos = licao!.guided?.steps ?? [];
+        const ids = passos.map((passo) => passo.id);
+        expect(ids, `${equivoco.id} -> ${equivoco.demolicao.passoId}`).toContain(
+          equivoco.demolicao.passoId,
+        );
+      }
+    },
+  );
+
+  it.each(equivocos.map((e) => [e.id, e] as const))(
+    "%s: os conceitos resolvem no glossário",
+    (_id, equivoco) => {
+      expect(equivoco.conceitos.length).toBeGreaterThan(0);
+      for (const conceito of equivoco.conceitos) {
+        expect(glossaryById.has(conceito), `${equivoco.id} -> ${conceito}`).toBe(true);
+      }
+    },
+  );
+
+  it.each(equivocos.map((e) => [e.id, e] as const))(
+    "%s: nome e explicação têm substância",
+    (_id, equivoco) => {
+      expect(equivoco.nome.trim().length).toBeGreaterThan(15);
+      // A explicação precisa dizer por que PARECE certo e onde falha.
+      expect(equivoco.explicacao.trim().length).toBeGreaterThan(120);
+    },
+  );
+
+  it("todo equívoco citado no conteúdo existe na taxonomia", () => {
+    const citados = new Set<string>();
+    for (const licao of lessons) {
+      for (const questao of licao.quiz) {
+        for (const opcao of questao.options) {
+          if (opcao.equivoco) citados.add(opcao.equivoco);
+        }
+      }
+      for (const passo of licao.guided?.steps ?? []) {
+        for (const escolha of passo.predict?.choices ?? []) {
+          if (escolha.equivoco) citados.add(escolha.equivoco);
+        }
+      }
+    }
+    for (const id of citados) {
+      expect(equivocosPorId.has(id), id).toBe(true);
+    }
+  });
+
+  it("um equívoco só é marcado em alternativa ERRADA", () => {
+    for (const licao of lessons) {
+      for (const questao of licao.quiz) {
+        for (const opcao of questao.options) {
+          if (opcao.correct) {
+            expect(opcao.equivoco, `${licao.id}/${questao.id}: "${opcao.text}"`).toBeUndefined();
+          }
+        }
+      }
+    }
+  });
+
+  it.each(lessons.map((licao) => [licao.id, licao] as const))(
+    "%s: os conceitos declarados nas perguntas resolvem",
+    (_id, licao) => {
+      for (const questao of licao.quiz) {
+        for (const conceito of questao.conceitos ?? []) {
+          expect(glossaryById.has(conceito), `${questao.id} -> ${conceito}`).toBe(true);
+        }
+      }
+    },
+  );
 });
 
 describe("episódios de áudio", () => {

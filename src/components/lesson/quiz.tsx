@@ -6,6 +6,7 @@ import { Check, RotateCcw, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { mulberry32 } from "@/lib/quantum/rng";
 import type { Question } from "@/data/lessons";
+import { useProgress } from "@/components/progress-provider";
 
 /**
  * Quiz de verdade.
@@ -41,9 +42,18 @@ type QuizProps = {
   questions: Question[];
   onPass: (score: number) => void;
   completed?: boolean;
+  /** Conceitos da aula, usados quando a pergunta não declara os seus. */
+  conceitos?: string[];
 };
 
-export function Quiz({ lessonId, questions, onPass, completed = false }: QuizProps) {
+export function Quiz({
+  lessonId,
+  questions,
+  onPass,
+  completed = false,
+  conceitos = [],
+}: QuizProps) {
+  const { registrarTentativa } = useProgress();
   const [attempt, setAttempt] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [checked, setChecked] = useState(false);
@@ -68,6 +78,24 @@ export function Quiz({ lessonId, questions, onPass, completed = false }: QuizPro
   const check = () => {
     if (!answeredAll) return;
     setChecked(true);
+
+    // Registrar ANTES de qualquer coisa poder apagar: o `retry()` abaixo zera
+    // `answers`, e até aqui era assim que a informação mais útil do site —
+    // qual alternativa errada o aluno escolheu — se perdia.
+    for (const question of shuffled) {
+      const escolhida = question.options[answers[question.id]];
+      if (!escolhida) continue;
+      registrarTentativa({
+        tipo: "quiz",
+        licaoId: lessonId,
+        itemId: question.id,
+        acertou: escolhida.correct,
+        conceitos: question.conceitos ?? conceitos,
+        equivocoId: escolhida.correct ? undefined : escolhida.equivoco,
+        detalhe: { escolha: escolhida.text, tentativa: attempt },
+      });
+    }
+
     // Nota real, não 100 fixo. Aprova a partir de 60%.
     if (score >= 60) onPass(score);
   };

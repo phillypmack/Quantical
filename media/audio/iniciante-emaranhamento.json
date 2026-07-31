@@ -1,0 +1,258 @@
+{
+  "id": "iniciante/emaranhamento",
+  "titulo": "Conexões impossíveis",
+  "resumo": "Descubra como a porta CNOT cria pares de qubits cujas correlações não cabem numa explicação clássica.",
+  "arquivo": "iniciante-emaranhamento.mp3",
+  "duracao": 502.6,
+  "vozes": [
+    "nina",
+    "teo"
+  ],
+  "turnos": [
+    {
+      "at": 0.0,
+      "fim": 14.48,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Boas-vindas! Hoje a gente vai criar conexões que parecem impossíveis: pares de qubits emaranhados. Vamos entender como a porta CNOT ajuda dois qubits a compartilhar um estado conjunto."
+    },
+    {
+      "at": 15.18,
+      "fim": 24.96,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Compartilhar um estado parece telepatia. Se eu mexer num qubit aqui, o outro recebe uma mensagem na mesma hora?"
+    },
+    {
+      "at": 25.66,
+      "fim": 36.86,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Não. O emaranhamento produz correlações muito fortes, mas não permite enviar informação mais rápido que a luz. Cada resultado local continua imprevisível."
+    },
+    {
+      "at": 37.56,
+      "fim": 44.57,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Antes da parte quântica, o que conta como correlação? Dois bits com o mesmo valor já formam uma dupla emaranhada?"
+    },
+    {
+      "at": 45.27,
+      "fim": 61.09,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Eles podem estar correlacionados sem nenhum emaranhamento. Imagine duas moedas preparadas com a mesma face e colocadas em caixas separadas. Ao abrir uma caixa, você aprende o que provavelmente encontrará na outra."
+    },
+    {
+      "at": 61.79,
+      "fim": 71.14,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Então não existe mistério. Alguém decidiu as duas faces antes de fechar as caixas, e olhar só revela o plano."
+    },
+    {
+      "at": 71.84,
+      "fim": 87.54,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Exatamente, essa é uma correlação clássica. Agora vamos montar um par diferente, começando com dois qubits no estado ket zero. O primeiro passo é aplicar uma porta Hadamard apenas ao primeiro qubit."
+    },
+    {
+      "at": 88.24,
+      "fim": 98.06,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "A Hadamard prepara uma superposição que pode dar zero ou um na medição. Mas o segundo qubit ainda está quieto em ket zero, certo?"
+    },
+    {
+      "at": 98.76,
+      "fim": 109.45,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Certo. Depois, a gente aplica uma porta CNOT, também chamada de NÃO controlada. O primeiro qubit é o controle e o segundo é o alvo."
+    },
+    {
+      "at": 110.15,
+      "fim": 122.7,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Então, se o controle for zero, nada acontece no alvo. Se o controle for um, a porta troca o alvo de zero para um."
+    },
+    {
+      "at": 123.4,
+      "fim": 141.74,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Essa descrição funciona quando o controle tem um valor definido. Aqui ele está numa superposição, e a CNOT preserva a coerência durante a operação. O resultado é um estado conjunto com as possibilidades ket zero zero e ket um um."
+    },
+    {
+      "at": 142.44,
+      "fim": 149.5,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Isso quer dizer que a porta testou os dois casos ao mesmo tempo? Um pedaço do computador seguiu pelo zero e outro pelo um?"
+    },
+    {
+      "at": 150.2,
+      "fim": 169.88,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Não. A gente não ganha duas respostas clássicas disponíveis para leitura. A CNOT transforma as amplitudes do estado conjunto, e só uma medição posterior produz um par de resultados clássicos."
+    },
+    {
+      "at": 170.58,
+      "fim": 179.68,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "E quais pares aparecem nessa medição? Imagino que possam sair zero zero, zero um, um zero ou um um."
+    },
+    {
+      "at": 180.38,
+      "fim": 196.44,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Numa medição ideal nessa base, aparecem apenas zero zero ou um um, cada um em cerca de metade das execuções. Os resultados individuais são aleatórios, mas os dois sempre coincidem."
+    },
+    {
+      "at": 197.14,
+      "fim": 205.57,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Isso ainda parece igual às moedas nas caixas. O par já podia ter escolhido zero zero ou um um durante a preparação."
+    },
+    {
+      "at": 206.27,
+      "fim": 219.53,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Com apenas essa medição, você tem razão: os dados não eliminam essa explicação clássica. Uma mistura de pares previamente preparados daria a mesma contagem. Por isso a gente precisa fazer outra pergunta ao par."
+    },
+    {
+      "at": 220.23,
+      "fim": 229.24,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Outra pergunta significa medir de um jeito diferente? Se eu trocar o aparelho, não estou mudando o próprio experimento?"
+    },
+    {
+      "at": 229.94,
+      "fim": 248.91,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Estamos escolhendo outra base de medição, e isso é parte essencial do teste. Antes de medir, aplicamos uma Hadamard em cada qubit. Para um par clássico que já fosse zero zero ou um um, cada Hadamard produziria resultados aleatórios independentes."
+    },
+    {
+      "at": 249.61,
+      "fim": 260.72,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Então a previsão da história das caixas é clara. Depois das duas Hadamard, os resultados deveriam coincidir apenas em metade das execuções."
+    },
+    {
+      "at": 261.42,
+      "fim": 278.92,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Agora a intuição quebra: para o par emaranhado ideal, eles continuam coincidindo em todas as execuções. Saem apenas zero zero ou um um também nessa nova base. A explicação de que o par apenas escolheu um valor igual com antecedência falha."
+    },
+    {
+      "at": 279.62,
+      "fim": 288.79,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Espera. Cada qubit isolado parece aleatório nas duas bases, mas o par preserva uma correlação perfeita nas duas?"
+    },
+    {
+      "at": 289.49,
+      "fim": 306.33,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Isso mesmo. As amplitudes do estado conjunto interferem quando as duas Hadamard são aplicadas. As contribuições que levariam a resultados diferentes se cancelam, enquanto as que levam a resultados iguais se reforçam."
+    },
+    {
+      "at": 307.03,
+      "fim": 318.78,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Talvez cada qubit tenha sua própria superposição e os dois só estejam sincronizados. Assim ainda seriam dois estados separados com relógios combinados."
+    },
+    {
+      "at": 319.48,
+      "fim": 334.62,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Essa descrição também é insuficiente. No par emaranhado, não dá para atribuir a cada qubit um estado puro independente que reproduza o estado completo. A informação física relevante está na relação entre os dois."
+    },
+    {
+      "at": 335.32,
+      "fim": 343.63,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Quando eu meço o primeiro e encontro zero, o segundo passa a dar zero. Isso não prova que alguma coisa viajou instantaneamente entre eles?"
+    },
+    {
+      "at": 344.33,
+      "fim": 361.5,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Não aparece nenhum sinal controlável. Você não escolhe se o primeiro resultado será zero ou um, e quem está com o segundo qubit vê apenas uma sequência aleatória. A correlação surge quando os registros dos dois lados são comparados por comunicação comum."
+    },
+    {
+      "at": 362.2,
+      "fim": 371.56,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Mas a dupla ainda poderia carregar uma lista secreta. Uma resposta pronta para cada tipo de medição resolveria o problema, não resolveria?"
+    },
+    {
+      "at": 372.26,
+      "fim": 393.32,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Essa ideia é mais sofisticada, e foi justamente o alvo dos testes de Bell. Certas combinações de medições impõem um limite a qualquer modelo com respostas locais predeterminadas. Pares emaranhados podem violar esse limite, como os experimentos observam."
+    },
+    {
+      "at": 394.02,
+      "fim": 401.87,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Então os qubits combinam as respostas depois que descobrem qual medição foi escolhida? Parece uma coordenação escondida."
+    },
+    {
+      "at": 402.57,
+      "fim": 422.64,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "A física quântica não descreve isso como uma conversa secreta entre partículas. Ela atribui um único estado ao par e calcula as probabilidades conjuntas. Essas correlações desafiam modelos locais com resultados predeterminados, mas continuam sem permitir comunicação instantânea."
+    },
+    {
+      "at": 423.34,
+      "fim": 434.86,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "Ainda quero entender o papel da CNOT. Ela não é apenas uma regra condicional igual à que existe num circuito clássico?"
+    },
+    {
+      "at": 435.56,
+      "fim": 461.84,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "A diferença aparece quando o controle está numa superposição coerente. A CNOT correlaciona as partes do estado sem realizar uma medição, e a operação é reversível. Se aplicarmos a mesma CNOT novamente antes de medir, o emaranhamento é desfeito e recuperamos o primeiro qubit em superposição e o segundo em ket zero."
+    },
+    {
+      "at": 462.54,
+      "fim": 474.45,
+      "voz": "teo",
+      "nome": "Téo",
+      "texto": "E se eu medir o par antes de aplicar a segunda CNOT? Ela também consegue desfazer tudo e recuperar a superposição original?"
+    },
+    {
+      "at": 475.15,
+      "fim": 502.6,
+      "voz": "nina",
+      "nome": "Nina",
+      "texto": "Não. A medição registra zero zero ou um um e elimina a coerência necessária para reconstruir aquela superposição com a CNOT sozinha. No próximo passo do site, você vai montar esse circuito, criar um estado de Bell e comparar na prática resultados correlacionados com resultados apenas aleatórios."
+    }
+  ]
+}

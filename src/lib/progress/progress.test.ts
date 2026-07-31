@@ -1,8 +1,17 @@
 import { describe, expect, it } from "vitest";
 
 import { mergeProgress, projectsToDelete } from "./merge";
-import { applyCompletion, dayDifference, emptyState, parseProgressState, studyDate } from "./state";
+import {
+  MAX_TENTATIVAS,
+  aplicarTentativa,
+  applyCompletion,
+  dayDifference,
+  emptyState,
+  parseProgressState,
+  studyDate,
+} from "./state";
 import type { ProgressState } from "./types";
+import type { Tentativa } from "@/lib/revisao/types";
 
 const base = (overrides: Partial<ProgressState> = {}): ProgressState => ({
   ...emptyState,
@@ -189,5 +198,66 @@ describe("merge com o servidor", () => {
       projects: [{ id: "p1", title: "T", code: "c", circuit: null, updated_at: "2026-07-30T10:00:00.000Z" }],
     });
     expect(merged.projects).toHaveLength(1);
+  });
+});
+
+describe("registro de tentativas", () => {
+  const tentativa = (over: Partial<Tentativa> = {}): Tentativa => ({
+    id: over.id ?? "t1",
+    tipo: "quiz",
+    licaoId: "iniciante/superposicao/teoria",
+    itemId: "q1",
+    acertou: false,
+    conceitos: ["superposicao"],
+    em: "2026-07-30T10:00:00.000Z",
+    ...over,
+  });
+
+  it("guarda a tentativa e agenda o conceito que ela toca", () => {
+    const next = aplicarTentativa(emptyState, tentativa(), new Date("2026-07-30T13:00:00Z"));
+    expect(next.tentativas).toHaveLength(1);
+    // Errou: volta para força 0 e revisa amanhã.
+    expect(next.revisao.superposicao).toMatchObject({ forca: 0, proximaEm: "2026-07-31" });
+  });
+
+  it("não apaga a tentativa anterior quando o aluno refaz o quiz", () => {
+    // Este é exatamente o defeito que motivou o registro: o `retry()` do quiz
+    // fazia setAnswers({}) e a alternativa errada escolhida sumia.
+    const errou = aplicarTentativa(emptyState, tentativa({ id: "t1", acertou: false }));
+    const acertou = aplicarTentativa(errou, tentativa({ id: "t2", acertou: true }));
+
+    expect(acertou.tentativas.map((item) => item.id)).toEqual(["t2", "t1"]);
+    expect(acertou.tentativas[1].acertou).toBe(false);
+  });
+
+  it("a tentativa mais recente fica na frente e o excesso antigo é descartado", () => {
+    let state: ProgressState = emptyState;
+    for (let index = 0; index < MAX_TENTATIVAS + 10; index += 1) {
+      state = aplicarTentativa(state, tentativa({ id: `t${index}` }));
+    }
+    expect(state.tentativas).toHaveLength(MAX_TENTATIVAS);
+    expect(state.tentativas[0].id).toBe(`t${MAX_TENTATIVAS + 9}`);
+  });
+
+  it("uma tentativa sem conceitos é gravada mas não agenda nada", () => {
+    // É o caso dos desafios, que não declaram termos do glossário.
+    const next = aplicarTentativa(emptyState, tentativa({ conceitos: [], licaoId: "desafio/bell" }));
+    expect(next.tentativas).toHaveLength(1);
+    expect(Object.keys(next.revisao)).toHaveLength(0);
+  });
+
+  it("sobrevive à ida e volta pelo localStorage", () => {
+    const state = aplicarTentativa(emptyState, tentativa({ equivocoId: "h-e-sorteio" }));
+    const round = parseProgressState(JSON.parse(JSON.stringify(state)));
+    expect(round.tentativas[0].equivocoId).toBe("h-e-sorteio");
+    expect(round.revisao.superposicao.proximaEm).toBe(state.revisao.superposicao.proximaEm);
+  });
+
+  it("descarta tentativa corrompida sem derrubar o resto do estado", () => {
+    const round = parseProgressState({
+      ...emptyState,
+      tentativas: [tentativa(), { id: "quebrada" }, null, "texto"],
+    });
+    expect(round.tentativas).toHaveLength(1);
   });
 });

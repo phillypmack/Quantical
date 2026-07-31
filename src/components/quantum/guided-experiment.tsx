@@ -8,8 +8,16 @@ import { cn } from "@/lib/cn";
 import { circuitHref } from "@/lib/quantum/permalink";
 import { SimulationFailure, SimulatorClient } from "@/lib/quantum/simulator-client";
 import type { Circuit, SimulationResult } from "@/lib/quantum/types";
+import { useProgress } from "@/components/progress-provider";
 import { CircuitDiagram } from "./circuit-diagram";
-import { PredictionGate, PredictionVerdict, type Prediction, type PredictionSpec } from "./prediction-gate";
+import {
+  PredictionGate,
+  PredictionVerdict,
+  scorePrediction,
+  type EscolhaPrevisao,
+  type Prediction,
+  type PredictionSpec,
+} from "./prediction-gate";
 import { ResultPanel } from "./result-panel";
 
 export type GuidedBranch = {
@@ -43,13 +51,20 @@ export function GuidedExperiment({
   steps,
   title,
   onComplete,
+  licaoId,
+  conceitos = [],
 }: {
   steps: GuidedStep[];
   title: string;
   onComplete?: () => void;
+  /** Para registrar as previsões. Sem isto o palpite errado se perde. */
+  licaoId?: string;
+  conceitos?: string[];
 }) {
+  const { registrarTentativa } = useProgress();
   const [index, setIndex] = useState(0);
   const [predictions, setPredictions] = useState<Record<string, Prediction>>({});
+  const [escolhas, setEscolhas] = useState<Record<string, EscolhaPrevisao>>({});
   const [results, setResults] = useState<Record<string, SimulationResult>>({});
   const [branch, setBranch] = useState<GuidedBranch | null>(null);
   const [running, setRunning] = useState(false);
@@ -78,18 +93,42 @@ export function GuidedExperiment({
     );
   }, [result, active.circuit.qubits]);
 
+  // "Rodar de novo" não pode contar como um palpite novo: o aluno já viu a
+  // resposta. Só o primeiro confronto entre previsão e realidade é registrado.
+  const registradas = useRef(new Set<string>());
+
   const run = useCallback(async () => {
     setRunning(true);
     setError(undefined);
     try {
       const simulation = await clientRef.current!.run({ ...active.circuit, captureSteps: true });
       setResults((current) => ({ ...current, [key]: simulation }));
+
+      if (licaoId && prediction && !branch && !registradas.current.has(step.id)) {
+        registradas.current.add(step.id);
+        const real = Object.fromEntries(
+          simulation.probabilities.map((probability, position) => [
+            position.toString(2).padStart(active.circuit.qubits, "0"),
+            probability,
+          ]),
+        );
+        const { worst, sharp } = scorePrediction(prediction, real);
+        registrarTentativa({
+          tipo: "previsao",
+          licaoId,
+          itemId: step.id,
+          acertou: sharp,
+          conceitos,
+          equivocoId: sharp ? undefined : escolhas[step.id]?.equivoco,
+          detalhe: { escolha: escolhas[step.id]?.id, erro: worst, palpite: prediction },
+        });
+      }
     } catch (caught) {
       setError(caught instanceof SimulationFailure ? caught.message : "A simulação falhou.");
     } finally {
       setRunning(false);
     }
-  }, [active.circuit, key]);
+  }, [active.circuit, key, licaoId, prediction, branch, step.id, conceitos, escolhas, registrarTentativa]);
 
   const goTo = (next: number) => {
     setIndex(next);
@@ -141,7 +180,10 @@ export function GuidedExperiment({
 
         {needsPrediction && step.predict && (
           <PredictionGate
-            onCommit={(value) => setPredictions((current) => ({ ...current, [step.id]: value }))}
+            onCommit={(value, escolha) => {
+              setPredictions((current) => ({ ...current, [step.id]: value }));
+              if (escolha) setEscolhas((current) => ({ ...current, [step.id]: escolha }));
+            }}
             spec={step.predict}
           />
         )}

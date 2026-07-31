@@ -30,7 +30,16 @@ export type Exercise = {
 export type CheckResult = {
   passed: boolean;
   label: string;
+  /** Texto para o aluno ler. Bom para exibir, inútil para agregar. */
   detail?: string;
+  /**
+   * O tipo de asserção que produziu este resultado.
+   *
+   * `label` e `detail` são frases montadas para leitura — comparar strings
+   * entre alunos não diz nada. `kind` é o que permite responder "em que os
+   * alunos tropeçam neste exercício" sem depender de como o texto foi escrito.
+   */
+  kind: Assertion["kind"];
 };
 
 export type ValidationResult = {
@@ -84,11 +93,12 @@ function removeGlobalPhase(
   }));
 }
 
+/** O `kind` é acrescentado por quem chama, a partir da própria asserção. */
 function checkAssertion(
   assertion: Assertion,
   circuit: Circuit,
   result: SimulationResult,
-): CheckResult {
+): Omit<CheckResult, "kind"> {
   switch (assertion.kind) {
     case "qubits": {
       const passed = circuit.qubits === assertion.exactly;
@@ -270,7 +280,10 @@ export function validateExercise(code: string, exercise: Exercise): ValidationRe
     };
   }
 
-  const checks = exercise.assertions.map((assertion) => checkAssertion(assertion, circuit, result));
+  const checks = exercise.assertions.map((assertion) => ({
+    ...checkAssertion(assertion, circuit, result),
+    kind: assertion.kind,
+  }));
   return {
     passed: checks.every((check) => check.passed),
     checks,

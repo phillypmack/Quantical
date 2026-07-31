@@ -176,6 +176,8 @@ export function LessonExperience({
 
             {lesson.guided && (
               <GuidedExperiment
+                conceitos={lesson.glossaryRefs}
+                licaoId={lessonId}
                 onComplete={() => {
                   setExperimentDone(true);
                   completeLesson(lessonId, 100);
@@ -187,7 +189,9 @@ export function LessonExperience({
 
             {lesson.exercise && (
               <ExerciseWorkbench
+                conceitos={lesson.glossaryRefs}
                 exercise={lesson.exercise}
+                licaoId={lessonId}
                 onSolved={() => completeLesson(lessonId, 100)}
                 solved={isComplete}
               />
@@ -195,6 +199,7 @@ export function LessonExperience({
 
             <Quiz
               completed={isComplete}
+              conceitos={lesson.glossaryRefs}
               lessonId={lessonId}
               onPass={(score) => completeLesson(lessonId, score)}
               questions={lesson.quiz}

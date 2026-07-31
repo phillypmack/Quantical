@@ -125,12 +125,14 @@ export const medicao: Lesson[] = [
             correct: false,
             explanation:
               "O circuito é idêntico e prepara sempre o mesmo estado. A variação está na medição, não na preparação.",
+            equivoco: "histograma-e-exato",
           },
           {
             text: "Que o simulador tem um erro de precisão.",
             correct: false,
             explanation:
               "A probabilidade calculada é exata. Se você olhar o valor teórico em vez da contagem, ele é o mesmo nas duas execuções.",
+            equivoco: "histograma-e-exato",
           },
         ],
       },
@@ -149,6 +151,7 @@ export const medicao: Lesson[] = [
             correct: false,
             explanation:
               "Não existe estabilização: H é uma rotação reversível. Aplicá-la a |0⟩ produziria sorteio, não certeza.",
+            equivoco: "medir-e-ler",
           },
           {
             text: "Porque circuitos mais longos são mais precisos.",
@@ -173,6 +176,7 @@ export const medicao: Lesson[] = [
             correct: false,
             explanation:
               "Não depende de alguém olhar. O que importa é que a informação ficou registrada fisicamente em algum lugar.",
+            equivoco: "medicao-precisa-de-observador",
           },
         ],
       },
@@ -256,7 +260,7 @@ export const medicao: Lesson[] = [
             states: ["0", "1"],
             choices: [
               { id: "meio", label: "Metade de cada", distribution: { "0": 0.5, "1": 0.5 } },
-              { id: "zero", label: "Continua sempre 0", distribution: { "0": 1, "1": 0 } },
+              { id: "zero", label: "Continua sempre 0", distribution: { "0": 1, "1": 0 }, equivoco: "medir-e-ler" },
             ],
           },
           reveal:
@@ -327,12 +331,14 @@ export const medicao: Lesson[] = [
             correct: false,
             explanation:
               "Nunca chega a zero. Por isso toda medição experimental vem com margem de erro.",
+            equivoco: "histograma-e-exato",
           },
           {
             text: "Não muda nada, porque a probabilidade é sempre a mesma.",
             correct: false,
             explanation:
               "A probabilidade teórica não muda mesmo — mas a qualidade da sua ESTIMATIVA dela melhora com mais amostras.",
+            equivoco: "histograma-e-exato",
           },
         ],
       },
