@@ -33,7 +33,7 @@ describe("arquitetura editorial do livro", () => {
 });
 
 describe("capítulos escritos", () => {
-  it("publica as três primeiras partes e o capítulo 13 completos, página por página", () => {
+  it("publica as três primeiras partes e os capítulos 13 e 14 completos, página por página", () => {
     expect(bookPages.filter((page) => page.chapter === 1)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 2)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 3)).toHaveLength(PAGES_PER_CHAPTER);
@@ -47,6 +47,7 @@ describe("capítulos escritos", () => {
     expect(bookPages.filter((page) => page.chapter === 11)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 12)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 13)).toHaveLength(PAGES_PER_CHAPTER);
+    expect(bookPages.filter((page) => page.chapter === 14)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPageByNumber.get(1)?.title).toBe("A oficina do Sol");
     expect(bookPageByNumber.get(9)?.title).toBe("A menor assinatura");
     expect(bookPageByNumber.get(10)?.title).toBe("A chave violeta");
@@ -73,6 +74,8 @@ describe("capítulos escritos", () => {
     expect(bookPageByNumber.get(108)?.title).toBe("O instante não era uma linha");
     expect(bookPageByNumber.get(109)?.title).toBe("O quarto sem órbitas");
     expect(bookPageByNumber.get(117)?.title).toBe("O endereço do elétron");
+    expect(bookPageByNumber.get(118)?.title).toBe("O segundo elétron não tinha nome");
+    expect(bookPageByNumber.get(126)?.title).toBe("A multidão que não se repete");
   });
 
   it.each(bookPages.map((page) => [page.number, page] as const))(
