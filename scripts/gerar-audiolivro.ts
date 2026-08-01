@@ -47,6 +47,23 @@ const CIENTISTA = "teo";
  * brilhava errado"). Falado, esse ponto vira "vezes" — no perfil de física ele
  * é multiplicação. Aqui vira pausa, que é o que ele significa na página.
  */
+/**
+ * Junta frases sem empilhar pontuação.
+ *
+ * Muitos títulos de nota já terminam em "?" ("O que é radiação térmica?"), e
+ * concatenar com ". " produzia "térmica?. É radiação…" — uma interrogação
+ * seguida de ponto, que o XTTS lê como duas pausas.
+ */
+function juntar(...partes: string[]): string {
+  return partes
+    .map((parte) => parte.trim())
+    .filter(Boolean)
+    .map((parte, indice, todas) =>
+      indice === todas.length - 1 || /[.!?…:]$/.test(parte) ? parte : `${parte}.`,
+    )
+    .join(" ");
+}
+
 function kickerFalado(kicker: string): string {
   return kicker
     .split("·")
@@ -73,7 +90,7 @@ function roteiroDoCapitulo(numero: number): Roteiro {
   // para consultar, então o áudio precisa se situar sozinho.
   falas.push({
     voz: NARRADORA,
-    texto: `Capítulo ${numero}. ${plano.title}. ${plano.subtitle}`,
+    texto: juntar(`Capítulo ${numero}`, plano.title, plano.subtitle),
   });
 
   for (const pagina of paginas) {
@@ -82,7 +99,7 @@ function roteiroDoCapitulo(numero: number): Roteiro {
 
     // O título da seção substitui a virada de página. É curto e evocativo
     // ("A oficina do Sol"), então serve de marco sem virar burocracia.
-    falas.push({ voz: NARRADORA, texto: `${pagina.title}. ${kickerFalado(pagina.kicker)}` });
+    falas.push({ voz: NARRADORA, texto: juntar(pagina.title, kickerFalado(pagina.kicker)) });
 
     for (const paragrafo of pagina.paragraphs) {
       falas.push({ voz: NARRADORA, texto: paragrafo });
@@ -93,7 +110,7 @@ function roteiroDoCapitulo(numero: number): Roteiro {
     // prosa. Quem quiser a expressão a tem na página, que continua existindo.
     falas.push({
       voz: CIENTISTA,
-      texto: `Nota científica. ${pagina.science.title}. ${pagina.science.body}`,
+      texto: juntar("Nota científica", pagina.science.title, pagina.science.body),
     });
   }
 
