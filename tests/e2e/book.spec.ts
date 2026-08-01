@@ -5,10 +5,10 @@ test("o livro apresenta o arco completo sem fingir páginas ainda não escritas"
   await page.goto("/livro");
   await expect(page.getByRole("heading", { name: "O Arquivo da Luz" })).toBeVisible();
   await expect(page.getByText("Duzentas e dezesseis páginas.")).toBeVisible();
-  await expect(page.getByText("180", { exact: true })).toBeVisible();
+  await expect(page.getByText("189", { exact: true })).toBeVisible();
   await expect(page.getByText(/páginas publicadas de 216/i)).toBeVisible();
-  await expect(page.getByRole("link", { name: "Ler capítulo" })).toHaveCount(20);
-  await expect(page.getByText(/Planejado · p. 181–189/)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Ler capítulo" })).toHaveCount(21);
+  await expect(page.getByText(/Planejado · p. 190–198/)).toBeVisible();
 });
 
 test("a leitura guarda a página, mostra ciência e expõe as fontes", async ({ page }) => {
