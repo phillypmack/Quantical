@@ -110,6 +110,19 @@ server {
         client_max_body_size 512k;
     }
 
+    # Ilustrações e imagem de compartilhamento.
+    #
+    # Uma semana, e NÃO `immutable`: os nomes são estáveis e não trazem hash
+    # de conteúdo, então uma ilustração regerada com o mesmo nome precisa
+    # chegar ao aluno sem depender de ele limpar o cache. É o oposto do
+    # /_next/static/, onde o hash está no nome e `immutable` é seguro.
+    location /images/ {
+        include /etc/nginx/snippets/quantical-headers.conf;
+        try_files \$uri =404;
+        add_header Cache-Control "public, max-age=604800" always;
+        access_log off;
+    }
+
     location /_next/static/ {
         include /etc/nginx/snippets/quantical-headers.conf;
         try_files \$uri =404;
