@@ -33,12 +33,13 @@ describe("arquitetura editorial do livro", () => {
 });
 
 describe("capítulos escritos", () => {
-  it("publica a primeira parte e o capítulo 5 completos, página por página", () => {
+  it("publica a primeira parte e os capítulos 5–6 completos, página por página", () => {
     expect(bookPages.filter((page) => page.chapter === 1)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 2)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 3)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 4)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 5)).toHaveLength(PAGES_PER_CHAPTER);
+    expect(bookPages.filter((page) => page.chapter === 6)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPageByNumber.get(1)?.title).toBe("A oficina do Sol");
     expect(bookPageByNumber.get(9)?.title).toBe("A menor assinatura");
     expect(bookPageByNumber.get(10)?.title).toBe("A chave violeta");
@@ -49,6 +50,8 @@ describe("capítulos escritos", () => {
     expect(bookPageByNumber.get(36)?.title).toBe("Um modelo brilhante e insuficiente");
     expect(bookPageByNumber.get(37)?.title).toBe("A pergunta invertida");
     expect(bookPageByNumber.get(45)?.title).toBe("O caminho que não cabia");
+    expect(bookPageByNumber.get(46)?.title).toBe("O vidro que respirou");
+    expect(bookPageByNumber.get(54)?.title).toBe("O níquel respondeu");
   });
 
   it.each(bookPages.map((page) => [page.number, page] as const))(
