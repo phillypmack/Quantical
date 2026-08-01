@@ -4,12 +4,21 @@ import { chapter03 } from "./chapters/ch03";
 import { chapter04 } from "./chapters/ch04";
 import { chapter05 } from "./chapters/ch05";
 import { chapter06 } from "./chapters/ch06";
+import { chapter07 } from "./chapters/ch07";
 
 export { BOOK_SUBTITLE, BOOK_TITLE, BOOK_TOTAL_PAGES, PAGES_PER_CHAPTER, bookChapters, bookParts } from "./outline";
 export { bookReferenceById, bookReferences } from "./bibliography";
 export type { BookChapterPlan, BookPage, BookPart, BookReference } from "./types";
 
-export const bookPages = [...chapter01, ...chapter02, ...chapter03, ...chapter04, ...chapter05, ...chapter06];
+export const bookPages = [
+  ...chapter01,
+  ...chapter02,
+  ...chapter03,
+  ...chapter04,
+  ...chapter05,
+  ...chapter06,
+  ...chapter07,
+];
 
 export const bookPageByNumber = new Map(bookPages.map((page) => [page.number, page]));
 
