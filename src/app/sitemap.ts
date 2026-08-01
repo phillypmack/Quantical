@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next";
 import { episodios, slugDoEpisodio } from "@/data/audio";
 import { challenges } from "@/data/challenges";
 import { getAllLessons } from "@/data/curriculum";
+import { bookPages } from "@/data/book";
 import { SITE_URL } from "@/lib/site";
 
 // Sob `output: "export"` isto vira um sitemap.xml estático no build.
@@ -12,6 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = [
     { path: "/", priority: 1 },
     { path: "/aprender", priority: 0.9 },
+    { path: "/livro", priority: 0.9 },
     { path: "/laboratorio", priority: 0.9 },
     { path: "/desafios", priority: 0.8 },
     { path: "/audio", priority: 0.8 },
@@ -34,6 +36,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${SITE_URL}${lesson.href}`,
       changeFrequency: "monthly" as const,
       priority: 0.7,
+    })),
+    ...bookPages.map((page) => ({
+      url: `${SITE_URL}/livro/${page.number}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
     })),
     ...challenges.map((challenge) => ({
       url: `${SITE_URL}/desafios/${challenge.id}`,

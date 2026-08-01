@@ -10,6 +10,7 @@ import { QuantumMark } from "./quantum-mark";
 
 const nav = [
   { href: "/aprender", label: "Trilhas" },
+  { href: "/livro", label: "Livro" },
   { href: "/laboratorio", label: "Laboratório" },
   { href: "/desafios", label: "Desafios" },
   { href: "/notacao", label: "Notação" },

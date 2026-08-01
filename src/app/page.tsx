@@ -12,6 +12,7 @@ import {
 
 import { HadamardDemo } from "@/components/hadamard-demo";
 import { AvisoDeRevisao } from "@/components/revisao-sessao";
+import { BOOK_TITLE, BOOK_TOTAL_PAGES, bookPages } from "@/data/book";
 import { tracks, totalLessons } from "@/data/curriculum";
 
 export default function HomePage() {
@@ -94,6 +95,33 @@ export default function HomePage() {
               <p>Escreva circuitos em Python/Qiskit e leve o raciocínio para projetos.</p>
               <pre className="mini-code"><code><b>qc</b>.h(0){"\n"}<b>qc</b>.cx(0, 1)</code></pre>
             </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="home-section home-book-teaser">
+        <div className="shell home-book-teaser-grid">
+          <div className="home-book-mini-cover" aria-label={`Capa de ${BOOK_TITLE}`}>
+            <span>Quantical apresenta</span>
+            <strong>{BOOK_TITLE}</strong>
+            <i aria-hidden="true" />
+            <small>Uma viagem real pelos territórios da física quântica</small>
+          </div>
+          <div>
+            <p className="eyebrow">Leia como ficção. Verifique como ciência.</p>
+            <h2>Entre no Arquivo da Luz.</h2>
+            <p className="lead">
+              Lia atravessa as experiências que romperam a física clássica. A trama conduz;
+              equações, limites e fontes primárias mantêm cada descoberta no mundo real.
+            </p>
+            <dl className="home-book-stats">
+              <div><dt>{BOOK_TOTAL_PAGES}</dt><dd>páginas planejadas</dd></div>
+              <div><dt>24</dt><dd>capítulos</dd></div>
+              <div><dt>{bookPages.length}</dt><dd>páginas disponíveis</dd></div>
+            </dl>
+            <Link className="button button--light" href="/livro">
+              Abrir o livro <ArrowRight size={17} />
+            </Link>
           </div>
         </div>
       </section>
