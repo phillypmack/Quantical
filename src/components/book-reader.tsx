@@ -3,6 +3,8 @@ import { ArrowLeft, ArrowRight, BookOpen, LibraryBig } from "lucide-react";
 
 import type { BookChapterPlan, BookPage, BookReference } from "@/data/book";
 import { BOOK_TOTAL_PAGES } from "@/data/book";
+import { audiolivroCapitulos } from "@/data/audio/audiolivro";
+import { AudiolivroPlayer } from "./audio/audiolivro-player";
 import { BookProgressMarker } from "./book-progress";
 
 type BookReaderProps = {
@@ -15,6 +17,10 @@ type BookReaderProps = {
 
 export function BookReader({ page, chapter, references, previousPage, nextPage }: BookReaderProps) {
   const progress = (page.number / BOOK_TOTAL_PAGES) * 100;
+  // Só aparece quando o capítulo já foi narrado. São dez horas de síntese, e
+  // ela vai ficando pronta capítulo a capítulo — a página não pode prometer
+  // áudio que ainda não existe.
+  const narracao = audiolivroCapitulos.find((item) => item.numero === page.chapter);
   const firstHalf = page.paragraphs.slice(0, 3);
   const secondHalf = page.paragraphs.slice(3);
 
@@ -37,6 +43,8 @@ export function BookReader({ page, chapter, references, previousPage, nextPage }
           <h1>{page.title}</h1>
           <p>{chapter.subtitle}</p>
         </div>
+
+        {narracao && <AudiolivroPlayer capitulo={narracao} pagina={page.number} />}
 
         <article className="book-prose">
           {firstHalf.map((paragraph, index) => <p key={`a-${index}`}>{paragraph}</p>)}

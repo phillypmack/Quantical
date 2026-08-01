@@ -4241,3 +4241,112 @@ summary {
   background: var(--orange);
   color: #fff;
 }
+
+/* ---------------------------------------------------------------------------
+   Audiolivro
+
+   Barra compacta dentro da página do livro. Sem transcrição de propósito: o
+   texto já está logo abaixo — é o próprio livro.
+--------------------------------------------------------------------------- */
+.audiolivro-player {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 26px 0 34px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper-bright);
+}
+
+.audiolivro-player.is-erro {
+  border-color: var(--orange);
+  background: var(--orange-pale);
+  color: var(--ink);
+  font-size: 0.86rem;
+}
+.audiolivro-player.is-erro p { margin: 0; }
+.audiolivro-player.is-erro svg { flex-shrink: 0; color: var(--orange); }
+
+.audiolivro-play {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper-bright);
+  cursor: pointer;
+}
+.audiolivro-play:hover { background: var(--violet); }
+
+.audiolivro-corpo { flex: 1; min-width: 0; display: grid; gap: 7px; }
+
+.audiolivro-rotulo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+}
+.audiolivro-rotulo strong { color: var(--ink); font-weight: 600; }
+
+.audiolivro-barra { position: relative; display: block; height: 6px; }
+.audiolivro-barra input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+.audiolivro-barra::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--line);
+}
+.audiolivro-barra i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--violet);
+}
+
+.audiolivro-tempos {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  color: var(--ink-soft);
+  font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.audiolivro-tempos button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--violet);
+  font: inherit;
+  font-size: 0.74rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.audiolivro-tempos button.is-aqui { color: var(--ink-soft); text-decoration: none; cursor: default; }
+.audiolivro-velocidade { text-decoration: none !important; }
+
+@media (max-width: 640px) {
+  .audiolivro-player { gap: 12px; padding: 12px 14px; }
+  .audiolivro-play { width: 38px; height: 38px; }
+}

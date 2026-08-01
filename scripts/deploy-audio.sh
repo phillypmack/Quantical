@@ -5,16 +5,26 @@
 # somariam quase 90 MB em cada deploy, sem que nada neles tenha mudado. Aqui
 # só sobe o que é novo ou diferente, comparando o hash local com o remoto.
 #
-# Uso: ./scripts/deploy-audio.sh [usuario@host]
+# Uso:
+#   ./scripts/deploy-audio.sh [usuario@host]                 # episódios
+#   ./scripts/deploy-audio.sh [usuario@host] livro DIR       # audiolivro
+#
+# O segundo argumento é o subdiretório sob /audio/ — os capítulos do livro
+# moram em /audio/livro/ para não se misturarem com os episódios dos módulos,
+# que têm outra natureza e outro ciclo de vida.
 set -euo pipefail
 
 TARGET="${1:-root@187.77.8.195}"
-REMOTO="/var/www/quantical-audio"
-LOCAL="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/media/audio"
+SUB="${2:-}"
+RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+REMOTO="/var/www/quantical-audio${SUB:+/$SUB}"
+URL_BASE="https://quantical.com.br/audio${SUB:+/$SUB}"
+LOCAL="${3:-$RAIZ/media/audio}"
 
 if [ ! -d "$LOCAL" ]; then
-  echo "Nada em media/audio — gere os episódios antes:"
-  echo "  cd ../Dubla && .venv-tts/Scripts/python.exe -m dubla narrar ../Quantical/audio/roteiros/*.json --out ../Quantical/media/audio"
+  echo "Diretório de áudio não encontrado: $LOCAL"
+  echo "Gere antes:  cd ../Dubla && python -m dubla narrar <roteiros> --out <saida>"
   exit 1
 fi
 
@@ -24,7 +34,7 @@ if [ ${#ARQUIVOS[@]} -eq 0 ]; then
   exit 1
 fi
 
-echo "==> ${#ARQUIVOS[@]} episódio(s) local(is)"
+echo "==> ${#ARQUIVOS[@]} arquivo(s) em $LOCAL"
 
 # Hashes remotos numa ida só: uma conexão SSH por arquivo seria lento e ruidoso.
 REMOTOS="$(ssh "$TARGET" "mkdir -p $REMOTO && md5sum $REMOTO/*.mp3 2>/dev/null || true")"
@@ -53,7 +63,7 @@ fi
 echo "==> Conferindo em produção"
 FALHAS=0
 for arquivo in "${ARQUIVOS[@]}"; do
-  codigo="$(curl -s -o /dev/null -w '%{http_code}' -I "https://quantical.com.br/audio/$arquivo")"
+  codigo="$(curl -s -o /dev/null -w '%{http_code}' -I "$URL_BASE/$arquivo")"
   if [ "$codigo" != "200" ]; then
     echo "    $arquivo -> $codigo"
     FALHAS=$((FALHAS + 1))
@@ -61,8 +71,8 @@ for arquivo in "${ARQUIVOS[@]}"; do
 done
 
 if [ "$FALHAS" -gt 0 ]; then
-  echo "$FALHAS episódio(s) não respondem 200. Confira o bloco /audio/ do nginx."
+  echo "$FALHAS arquivo(s) não respondem 200. Confira o bloco /audio/ do nginx."
   exit 1
 fi
 
-echo "==> ${#ARQUIVOS[@]} episódio(s) respondendo 200 em https://quantical.com.br/audio/"
+echo "==> ${#ARQUIVOS[@]} arquivo(s) respondendo 200 em $URL_BASE/"

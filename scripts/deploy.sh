@@ -78,7 +78,10 @@ server {
     # Casa só o .mp3, e NÃO o prefixo /audio/: as PÁGINAS dos episódios moram
     # em /audio/<slug> e precisam continuar vindo do site. Um location /audio/
     # comum engoliria as duas coisas e as páginas dariam 404.
-    location ~ ^/audio/(?<episodio>[^/]+\.mp3)\$ {
+    location ~ ^/audio/(?<episodio>[a-z0-9/-]+\.mp3)\$ {
+        # A classe não inclui ponto, então `..` não tem como aparecer e o
+        # alias não pode escapar do diretório. É o que permite o subnível de
+        # /audio/livro/ sem abrir travessia de caminho.
         alias /var/www/quantical-audio/\$episodio;
         include /etc/nginx/snippets/quantical-headers.conf;
         # Accept-Ranges é o que permite arrastar a barra sem baixar tudo antes.

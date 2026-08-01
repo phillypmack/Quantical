@@ -17,7 +17,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { BOOK_SUBTITLE, BOOK_TITLE, bookChapters, bookPages } from "../src/data/book";
+import { bookChapters, bookPages } from "../src/data/book";
 
 type Fala = { voz: string; texto: string };
 type Roteiro = {

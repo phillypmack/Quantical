@@ -1,13 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { Download, Gauge, Pause, Play, RotateCcw, RotateCw } from "lucide-react";
 
 import { LOCUTORES, formatarTempo, type AudioEpisode } from "@/data/audio";
 import { cn } from "@/lib/cn";
 import { useProgress } from "@/components/progress-provider";
+import { useReprodutor } from "./use-reprodutor";
 
-const VELOCIDADES = [1, 1.25, 1.5, 1.75];
 const PULO = 15;
 
 /**
@@ -20,93 +19,26 @@ const PULO = 15;
  */
 export function EpisodePlayer({ episode }: { episode: AudioEpisode }) {
   const { completeLesson, completed } = useProgress();
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [tocando, setTocando] = useState(false);
-  const [tempo, setTempo] = useState(0);
-  const [duracao, setDuracao] = useState(episode.duracao);
-  const [velocidade, setVelocidade] = useState(1);
-  const [erro, setErro] = useState(false);
-
   const progressoId = `audio/${episode.id}`;
   const ouvido = completed.includes(progressoId);
-  const marcado = useRef(ouvido);
-  /**
-   * Posição pedida antes de o áudio estar pronto para buscar.
-   *
-   * Atribuir `currentTime` com readyState 0 é ignorado em silêncio pelo
-   * navegador — e clicar numa fala da transcrição assim que a página abre é
-   * exatamente quando isso acontece. Fica pendente até o loadedmetadata.
-   */
-  const buscaPendente = useRef<number | null>(null);
+
+  const {
+    audioRef,
+    tocando,
+    tempo,
+    duracao,
+    velocidade,
+    erro,
+    irPara,
+    alternar,
+    trocarVelocidade,
+  } = useReprodutor({
+    duracaoInicial: episode.duracao,
+    // Marca como ouvido a 90%: exigir o fim penaliza quem para nos créditos.
+    aoConcluir: () => completeLesson(progressoId, 100),
+  });
 
   const turnoAtual = episode.turnos.findLastIndex((turno) => tempo >= turno.at);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const aoAtualizar = () => {
-      setTempo(audio.currentTime);
-      // Marca como ouvido a 90%: exigir o fim penaliza quem para nos créditos.
-      if (!marcado.current && audio.duration > 0 && audio.currentTime / audio.duration >= 0.9) {
-        marcado.current = true;
-        completeLesson(progressoId, 100);
-      }
-    };
-    const aoCarregar = () => {
-      setDuracao(Number.isFinite(audio.duration) ? audio.duration : episode.duracao);
-      if (buscaPendente.current !== null) {
-        audio.currentTime = buscaPendente.current;
-        buscaPendente.current = null;
-      }
-    };
-
-    audio.addEventListener("timeupdate", aoAtualizar);
-    audio.addEventListener("loadedmetadata", aoCarregar);
-    audio.addEventListener("play", () => setTocando(true));
-    audio.addEventListener("pause", () => setTocando(false));
-    audio.addEventListener("ended", () => setTocando(false));
-    audio.addEventListener("error", () => setErro(true));
-
-    return () => {
-      audio.removeEventListener("timeupdate", aoAtualizar);
-      audio.removeEventListener("loadedmetadata", aoCarregar);
-    };
-  }, [completeLesson, progressoId, episode.duracao]);
-
-  const irPara = useCallback(
-    (segundos: number) => {
-      const audio = audioRef.current;
-      if (!audio) return;
-
-      const limite = Number.isFinite(audio.duration) ? audio.duration : episode.duracao;
-      const alvo = Math.max(0, Math.min(limite, segundos));
-
-      if (audio.readyState === 0) {
-        buscaPendente.current = alvo;
-        audio.load();
-      } else {
-        audio.currentTime = alvo;
-      }
-      setTempo(alvo);
-    },
-    [episode.duracao],
-  );
-
-  const alternar = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (audio.paused) void audio.play();
-    else audio.pause();
-  }, []);
-
-  const trocarVelocidade = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    const proxima = VELOCIDADES[(VELOCIDADES.indexOf(velocidade) + 1) % VELOCIDADES.length];
-    audio.playbackRate = proxima;
-    setVelocidade(proxima);
-  }, [velocidade]);
 
   return (
     <section className="episode-player" aria-label={`Episódio: ${episode.titulo}`}>
