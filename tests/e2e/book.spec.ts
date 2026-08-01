@@ -1,14 +1,14 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-test("o livro apresenta o arco completo sem fingir páginas ainda não escritas", async ({ page }) => {
+test("o livro apresenta a edição integral de 216 páginas", async ({ page }) => {
   await page.goto("/livro");
   await expect(page.getByRole("heading", { name: "O Arquivo da Luz" })).toBeVisible();
   await expect(page.getByText("Duzentas e dezesseis páginas.")).toBeVisible();
-  await expect(page.getByText("207", { exact: true })).toBeVisible();
-  await expect(page.getByText(/páginas publicadas de 216/i)).toBeVisible();
-  await expect(page.getByRole("link", { name: "Ler capítulo" })).toHaveCount(23);
-  await expect(page.getByText(/Planejado · p. 208–216/)).toBeVisible();
+  await expect(page.getByText("216", { exact: true })).toBeVisible();
+  await expect(page.getByText(/páginas da edição integral/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Ler capítulo" })).toHaveCount(24);
+  await expect(page.getByText(/Planejado/)).toHaveCount(0);
 });
 
 test("a leitura guarda a página, mostra ciência e expõe as fontes", async ({ page }) => {

@@ -24,16 +24,16 @@ describe("arquitetura editorial do livro", () => {
     }
   });
 
-  it("não usa páginas-fantasma para inflar a contagem publicada", () => {
+  it("publica todas as páginas planejadas sem páginas-fantasma", () => {
     expect(bookPages.map((page) => page.number)).toEqual(
-      Array.from({ length: bookPages.length }, (_, index) => index + 1),
+      Array.from({ length: BOOK_TOTAL_PAGES }, (_, index) => index + 1),
     );
-    expect(bookPages.length).toBeLessThan(BOOK_TOTAL_PAGES);
+    expect(bookPages).toHaveLength(BOOK_TOTAL_PAGES);
   });
 });
 
 describe("capítulos escritos", () => {
-  it("publica as cinco primeiras partes e os capítulos 21 a 23 completos, página por página", () => {
+  it("publica as seis partes e os 24 capítulos completos, página por página", () => {
     expect(bookPages.filter((page) => page.chapter === 1)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 2)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 3)).toHaveLength(PAGES_PER_CHAPTER);
@@ -57,6 +57,7 @@ describe("capítulos escritos", () => {
     expect(bookPages.filter((page) => page.chapter === 21)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 22)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 23)).toHaveLength(PAGES_PER_CHAPTER);
+    expect(bookPages.filter((page) => page.chapter === 24)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPageByNumber.get(1)?.title).toBe("A oficina do Sol");
     expect(bookPageByNumber.get(9)?.title).toBe("A menor assinatura");
     expect(bookPageByNumber.get(10)?.title).toBe("A chave violeta");
@@ -103,6 +104,8 @@ describe("capítulos escritos", () => {
     expect(bookPageByNumber.get(198)?.title).toBe("O recado que não viajou");
     expect(bookPageByNumber.get(199)?.title).toBe("Velocidade precisava de uma régua");
     expect(bookPageByNumber.get(207)?.title).toBe("O atalho ainda precisava de uma estrada");
+    expect(bookPageByNumber.get(208)?.title).toBe("O ruído entrou por todas as portas");
+    expect(bookPageByNumber.get(216)?.title).toBe("A máquina que aprende a sobreviver");
   });
 
   it.each(bookPages.map((page) => [page.number, page] as const))(
@@ -121,9 +124,17 @@ describe("capítulos escritos", () => {
 
   it("não contém fontes duplicadas nem links sem DOI ou instituição reconhecível", () => {
     expect(new Set(bookReferences.map((reference) => reference.id)).size).toBe(bookReferences.length);
+    expect(new Set(bookReferences.map((reference) => reference.url)).size).toBe(bookReferences.length);
     for (const reference of bookReferences) {
       expect(reference.url).toMatch(/^https:\/\//);
       expect(["fonte-primaria", "revisao", "institucional"]).toContain(reference.kind);
+    }
+  });
+
+  it("não repete títulos nem uma mesma fonte dentro da página", () => {
+    expect(new Set(bookPages.map((page) => page.title)).size).toBe(bookPages.length);
+    for (const page of bookPages) {
+      expect(new Set(page.references).size, `página ${page.number}`).toBe(page.references.length);
     }
   });
 });

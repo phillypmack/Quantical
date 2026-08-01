@@ -29,6 +29,7 @@ export const metadata: Metadata = {
 
 export default function BookHomePage() {
   const publishedPages = bookPages.length;
+  const isComplete = publishedPages === BOOK_TOTAL_PAGES;
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Book",
@@ -63,9 +64,9 @@ export default function BookHomePage() {
             </div>
           </div>
           <aside className="book-edition-card" aria-label="Dados da edição">
-            <span>Edição digital em construção</span>
+            <span>{isComplete ? "Edição digital completa" : "Edição digital em construção"}</span>
             <strong>{String(publishedPages).padStart(3, "0")}</strong>
-            <p>páginas publicadas de {BOOK_TOTAL_PAGES}</p>
+            <p>{isComplete ? "páginas da edição integral" : `páginas publicadas de ${BOOK_TOTAL_PAGES}`}</p>
             <div><i style={{ width: `${(publishedPages / BOOK_TOTAL_PAGES) * 100}%` }} /></div>
             <small>24 capítulos · 6 partes · referências página a página</small>
           </aside>
@@ -84,7 +85,7 @@ export default function BookHomePage() {
         <header>
           <p className="eyebrow"><LibraryBig size={15} /> Mapa da viagem</p>
           <h2>Seis territórios. Duzentas e dezesseis páginas.</h2>
-          <p>O manuscrito é publicado capítulo por capítulo. Páginas disponíveis têm acesso direto; as demais mostram o percurso completo sem fingir que já foram escritas.</p>
+          <p>{isComplete ? "A edição integral está disponível gratuitamente, com caderno científico e referências em cada página." : "O manuscrito é publicado capítulo por capítulo. Páginas disponíveis têm acesso direto; as demais mostram o percurso completo sem fingir que já foram escritas."}</p>
         </header>
 
         <div className="book-parts">
