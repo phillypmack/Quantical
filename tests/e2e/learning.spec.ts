@@ -828,3 +828,52 @@ test("a imagem de compartilhamento está declarada e existe", async ({ page }) =
     "summary_large_image",
   );
 });
+
+/* ---------------------------------------------------------------------------
+   Audiolivro
+--------------------------------------------------------------------------- */
+
+test("o capítulo narrado abre no segundo da página aberta", async ({ page }) => {
+  // A promessa do desenho: um arquivo de 26 minutos que começa onde a página
+  // começa. Sem isso o leitor teria de caçar o trecho na barra de progresso.
+  await page.goto("/livro/1");
+  const player = page.locator(".audiolivro-player");
+  await expect(player).toBeVisible();
+
+  const audio = page.locator(".audiolivro-audio");
+  await expect(audio).toHaveAttribute("src", /\/audio\/livro\/livro-ch01\.mp3$/);
+
+  // O arquivo precisa existir de verdade, não só estar referenciado.
+  const src = await audio.getAttribute("src");
+  const resposta = await page.request.get(src!);
+  expect(resposta.status()).toBe(200);
+  expect(resposta.headers()["content-type"]).toContain("audio/mpeg");
+
+  // Página 5 do mesmo capítulo: o ponto de entrada tem de ser mais adiante.
+  await page.goto("/livro/5");
+  await page.getByRole("button", { name: /Ir para esta página/i }).click();
+
+  const posicao = await page
+    .locator(".audiolivro-audio")
+    .evaluate((el: HTMLAudioElement) => el.currentTime);
+  expect(posicao).toBeGreaterThan(60);
+});
+
+test("página de capítulo ainda não narrado não promete áudio", async ({ page }) => {
+  // A síntese leva onze horas e fica pronta capítulo a capítulo. Uma página
+  // sem áudio não pode mostrar um player que não toca.
+  await page.goto("/livro/10");
+  await expect(page.locator(".audiolivro-player")).toHaveCount(0);
+  // Mas o texto continua inteiro.
+  await expect(page.locator(".book-prose p").first()).toBeVisible();
+});
+
+test("o audiolivro não tem violações graves de acessibilidade", async ({ page }) => {
+  await page.goto("/livro/1");
+  await expect(page.locator(".audiolivro-player")).toBeVisible();
+  const results = await new AxeBuilder({ page }).analyze();
+  const blocking = results.violations.filter(
+    (violation) => violation.impact === "critical" || violation.impact === "serious",
+  );
+  expect(blocking, blocking.map((item) => item.id).join(", ")).toEqual([]);
+});

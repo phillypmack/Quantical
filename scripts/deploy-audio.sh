@@ -7,7 +7,7 @@
 #
 # Uso:
 #   ./scripts/deploy-audio.sh [usuario@host]                 # episódios
-#   ./scripts/deploy-audio.sh [usuario@host] livro DIR       # audiolivro
+#   ./scripts/deploy-audio.sh [usuario@host] livro media/audio/livro   # livro
 #
 # O segundo argumento é o subdiretório sob /audio/ — os capítulos do livro
 # moram em /audio/livro/ para não se misturarem com os episódios dos módulos,
