@@ -15,6 +15,7 @@ import { chapter14 } from "./chapters/ch14";
 import { chapter15 } from "./chapters/ch15";
 import { chapter16 } from "./chapters/ch16";
 import { chapter17 } from "./chapters/ch17";
+import { chapter18 } from "./chapters/ch18";
 
 export { BOOK_SUBTITLE, BOOK_TITLE, BOOK_TOTAL_PAGES, PAGES_PER_CHAPTER, bookChapters, bookParts } from "./outline";
 export { bookReferenceById, bookReferences } from "./bibliography";
@@ -38,6 +39,7 @@ export const bookPages = [
   ...chapter15,
   ...chapter16,
   ...chapter17,
+  ...chapter18,
 ];
 
 export const bookPageByNumber = new Map(bookPages.map((page) => [page.number, page]));
