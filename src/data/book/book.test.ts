@@ -33,7 +33,7 @@ describe("arquitetura editorial do livro", () => {
 });
 
 describe("capítulos escritos", () => {
-  it("publica as duas primeiras partes e os capítulos 9 e 10 completos, página por página", () => {
+  it("publica as duas primeiras partes e os capítulos 9 a 11 completos, página por página", () => {
     expect(bookPages.filter((page) => page.chapter === 1)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 2)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 3)).toHaveLength(PAGES_PER_CHAPTER);
@@ -44,6 +44,7 @@ describe("capítulos escritos", () => {
     expect(bookPages.filter((page) => page.chapter === 8)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 9)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 10)).toHaveLength(PAGES_PER_CHAPTER);
+    expect(bookPages.filter((page) => page.chapter === 11)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPageByNumber.get(1)?.title).toBe("A oficina do Sol");
     expect(bookPageByNumber.get(9)?.title).toBe("A menor assinatura");
     expect(bookPageByNumber.get(10)?.title).toBe("A chave violeta");
@@ -64,6 +65,8 @@ describe("capítulos escritos", () => {
     expect(bookPageByNumber.get(81)?.title).toBe("A pergunta que mudava a resposta");
     expect(bookPageByNumber.get(82)?.title).toBe("O mapa apertado");
     expect(bookPageByNumber.get(90)?.title).toBe("O limite virou caminho");
+    expect(bookPageByNumber.get(91)?.title).toBe("O forno de prata");
+    expect(bookPageByNumber.get(99)?.title).toBe("A bússola partida");
   });
 
   it.each(bookPages.map((page) => [page.number, page] as const))(
