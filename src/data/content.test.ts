@@ -4,6 +4,8 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { episodios } from "./audio";
+import { audiolivroCapitulos } from "./audio/audiolivro";
+import { bookChapters, bookPages } from "./book";
 import { challenges } from "./challenges";
 import { equivocos, equivocosPorId } from "./equivocos";
 import { getModuleLessons, getAllLessons, totalLessons, tracks } from "./curriculum";
@@ -478,5 +480,74 @@ describe("notação: nada aparece sem ter sido apresentado", () => {
         expect(notacaoPorId.has(outro), `${item.id} -> ${outro}`).toBe(true);
       }
     }
+  });
+});
+
+describe("audiolivro: o capítulo narrado casa com o livro escrito", () => {
+  /**
+   * O audiolivro é gerado capítulo a capítulo ao longo de onze horas de
+   * síntese, então esta suíte precisa passar tanto com zero capítulos quanto
+   * com os 24. O que ela trava é a coerência do que JÁ existe — não a
+   * completude, que é estado de andamento e não defeito.
+   */
+  const catalogo = audiolivroCapitulos.map((cap) => [`ch${cap.numero}`, cap] as const);
+
+  it("todo capítulo narrado existe no livro", () => {
+    const doLivro = new Set(bookChapters.map((item) => item.number));
+    for (const capitulo of audiolivroCapitulos) {
+      expect(doLivro.has(capitulo.numero), `capítulo ${capitulo.numero}`).toBe(true);
+    }
+  });
+
+  it("não há capítulo narrado duas vezes", () => {
+    const numeros = audiolivroCapitulos.map((cap) => cap.numero);
+    expect(new Set(numeros).size).toBe(numeros.length);
+  });
+
+  it.each(catalogo)("%s: os tempos da transcrição são crescentes", (_id, capitulo) => {
+    let anterior = -1;
+    for (const turno of capitulo.turnos) {
+      expect(turno.at).toBeGreaterThanOrEqual(anterior);
+      expect(turno.fim).toBeGreaterThanOrEqual(turno.at);
+      anterior = turno.at;
+    }
+  });
+
+  it.each(catalogo)("%s: toda página do capítulo tem um ponto de entrada", (_id, capitulo) => {
+    // É esta a promessa do player: abrir a página e ouvir a partir dela. Uma
+    // página sem marca cairia no início do capítulo, calada.
+    const paginas = bookPages
+      .filter((pagina) => pagina.chapter === capitulo.numero)
+      .map((pagina) => pagina.number);
+
+    for (const numero of paginas) {
+      expect(capitulo.paginas[numero], `página ${numero}`).toBeTypeOf("number");
+    }
+  });
+
+  it.each(catalogo)("%s: os pontos de entrada crescem com a página", (_id, capitulo) => {
+    const entradas = Object.entries(capitulo.paginas)
+      .map(([pagina, segundo]) => ({ pagina: Number(pagina), segundo }))
+      .sort((a, b) => a.pagina - b.pagina);
+
+    for (let i = 1; i < entradas.length; i += 1) {
+      expect(entradas[i].segundo, `página ${entradas[i].pagina}`).toBeGreaterThanOrEqual(
+        entradas[i - 1].segundo,
+      );
+    }
+  });
+
+  it.each(catalogo)("%s: nenhum ponto de entrada cai depois do fim do áudio", (_id, capitulo) => {
+    for (const [pagina, segundo] of Object.entries(capitulo.paginas)) {
+      expect(segundo, `página ${pagina}`).toBeLessThanOrEqual(capitulo.duracao);
+    }
+  });
+
+  it.each(catalogo)("%s: as duas vozes aparecem", (_id, capitulo) => {
+    // Nina narra, Téo lê as notas científicas. Se uma sumir, a fronteira entre
+    // ficção e verificação deixou de ser audível — que é o ponto do desenho.
+    const vozes = new Set(capitulo.turnos.map((turno) => turno.voz));
+    expect(vozes.has("nina"), "nina").toBe(true);
+    expect(vozes.has("teo"), "teo").toBe(true);
   });
 });
