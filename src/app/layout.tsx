@@ -4,7 +4,7 @@ import { Inter } from "next/font/google";
 import { ProgressProvider } from "@/components/progress-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, SOCIAL_IMAGE } from "@/lib/site";
 
 import "./globals.css";
 
@@ -42,11 +42,13 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: "Quantical — Programação quântica, finalmente compreensível",
     description: SITE_DESCRIPTION,
+    images: [SOCIAL_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: "Quantical",
     description: SITE_DESCRIPTION,
+    images: [SOCIAL_IMAGE],
   },
   robots: { index: true, follow: true },
 };

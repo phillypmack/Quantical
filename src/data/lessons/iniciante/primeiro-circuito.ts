@@ -105,6 +105,11 @@ export const primeiroCircuito: Lesson[] = [
         kind: "metaphor",
         image:
           "O computador quântico é rápido porque testa as duas entradas ao mesmo tempo e depois lê as duas respostas de uma vez. Onde o clássico faz duas consultas em série, o quântico faz as duas em paralelo.",
+        ilustracao: {
+          src: "/images/metafora-duas-leituras.png",
+          webp: "/images/metafora-duas-leituras.webp",
+          alt: "Pessoa sentada de pernas cruzadas segura dois livros abertos, um em cada mão.",
+        },
         breaks:
           "Se o circuito lesse as duas respostas, ao final você saberia f(0) e f(1) separadamente. Rode o circuito ao lado, que aplica a função balanceada f(x) = x: o resultado diz balanceada com certeza absoluta, e não diz nem qual é f(0) nem qual é f(1) — as duas balanceadas possíveis dão exatamente o mesmo histograma. O algoritmo não leu duas respostas: ele fez uma pergunta diferente, sobre a relação entre elas, e abriu mão de saber cada uma. A vantagem veio de trocar de pergunta, não de multiplicar leituras.",
         circuit: balanceadaIdentidade,

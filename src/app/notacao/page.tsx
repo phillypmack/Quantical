@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 
 import { getAllLessons } from "@/data/curriculum";
 import { notacoes } from "@/data/notacao";
+import { SOCIAL_IMAGE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Como ler a notação quântica",
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
     url: "/notacao",
     type: "article",
     locale: "pt_BR",
+    images: [SOCIAL_IMAGE],
   },
 };
 

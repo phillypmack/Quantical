@@ -91,6 +91,11 @@ export const medicao: Lesson[] = [
         kind: "metaphor",
         image:
           "Medir é ler o valor guardado. O qubit tem um estado, a medição revela esse estado, e pronto — como consultar uma variável.",
+        ilustracao: {
+          src: "/images/metafora-envelope-lacrado.png",
+          webp: "/images/metafora-envelope-lacrado.webp",
+          alt: "Envelope azul-petróleo aberto, com o lacre rompido e uma ficha em branco saindo de dentro.",
+        },
         breaks:
           "Se fosse leitura, o mesmo estado daria sempre o mesmo grau de certeza. Rode o circuito ao lado: ele prepara |+⟩ e aplica uma Hadamard antes de medir. O resultado é cem por cento em |0⟩, sem nenhum sorteio. Mas medir |+⟩ diretamente dá metade e metade. O estado é o mesmo nos dois casos; o que mudou foi a pergunta. A Hadamard antes da medição troca a pergunta de “|0⟩ ou |1⟩?” para “|+⟩ ou |−⟩?”, e para essa pergunta o |+⟩ tem resposta certa.",
         circuit: maisComH,

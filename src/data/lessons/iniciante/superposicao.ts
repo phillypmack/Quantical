@@ -87,6 +87,11 @@ export const superposicao: Lesson[] = [
         kind: "metaphor",
         image:
           "Superposição é meio a meio. Um qubit em superposição é aquele que tem cinquenta por cento de chance de dar cada resultado — é isso que a palavra quer dizer.",
+        ilustracao: {
+          src: "/images/metafora-meio-a-meio.png",
+          webp: "/images/metafora-meio-a-meio.webp",
+          alt: "Duas jarras idênticas, cheias até a metade, têm a superfície do líquido inclinada em sentidos opostos.",
+        },
         breaks:
           "Mas |+⟩ e |−⟩ são os dois meio a meio, e não são o mesmo estado. Rode o circuito ao lado: ele prepara |−⟩ e depois aplica outra Hadamard. Se |−⟩ fosse simplesmente 'meio a meio', o resultado teria que ser o mesmo que sai de |+⟩ com a mesma porta — que é cem por cento no zero. Dá cem por cento no um. Portanto 'meio a meio' não é uma descrição do estado: é só uma descrição de uma medição específica dele.",
         circuit: menosComH,

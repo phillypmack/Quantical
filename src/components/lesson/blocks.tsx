@@ -152,14 +152,20 @@ function MetaphorBlock({ block }: { block: Extract<Block, { kind: "metaphor" }> 
           <Sparkles size={14} /> A imagem que costumam usar
         </span>
         <p>{block.image}</p>
-        {block.imageUrl && (
-          <img
-            src={block.imageUrl}
-            alt="Ilustração da metáfora"
-            className="metaphor-visual"
-            style={{ width: "100%", borderRadius: "8px", marginTop: "1rem" }}
-          />
-        )}
+        <figure className="metaphor-illustration">
+          <picture>
+            <source srcSet={block.ilustracao.webp} type="image/webp" />
+            <img
+              src={block.ilustracao.src}
+              alt={block.ilustracao.alt}
+              className="metaphor-visual"
+              decoding="async"
+              height={1024}
+              loading="lazy"
+              width={1536}
+            />
+          </picture>
+        </figure>
       </div>
       <div className="metaphor-break">
         <span>

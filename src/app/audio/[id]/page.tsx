@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { EpisodePlayer } from "@/components/audio/episode-player";
 import { LOCUTORES, episodios, slugDoEpisodio } from "@/data/audio";
 import { getTrack } from "@/data/curriculum";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL, SOCIAL_IMAGE } from "@/lib/site";
 
 type EpisodePageProps = { params: Promise<{ id: string }> };
 
@@ -30,6 +30,7 @@ export async function generateMetadata({ params }: EpisodePageProps): Promise<Me
       url,
       title: episodio.titulo,
       description: episodio.resumo,
+      images: [SOCIAL_IMAGE],
       audio: [{ url: `${SITE_URL}${episodio.src}`, type: "audio/mpeg" }],
     },
   };

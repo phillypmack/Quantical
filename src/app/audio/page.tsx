@@ -4,7 +4,7 @@ import { ArrowRight, Headphones, Mic } from "lucide-react";
 
 import { LOCUTORES, episodios, formatarTempo, slugDoEpisodio } from "@/data/audio";
 import { getTrack } from "@/data/curriculum";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL, SOCIAL_IMAGE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Quantical em Áudio — podcast de computação quântica em português",
@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     title: "Quantical em Áudio",
     description:
       "Podcast de computação quântica em português, com transcrição completa de cada episódio.",
+    images: [SOCIAL_IMAGE],
   },
 };
 

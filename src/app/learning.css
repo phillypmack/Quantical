@@ -421,6 +421,21 @@
 .metaphor-break > span { color: var(--orange); }
 .metaphor-card p { margin: 8px 0 0; line-height: 1.7; }
 .metaphor-break small { font-size: 0.78rem; color: var(--ink-soft); }
+.metaphor-illustration {
+  margin: 18px 0 0;
+  overflow: hidden;
+  border: 1px solid rgb(16 29 60 / 12%);
+  border-radius: 10px;
+  background: #f5f4ef;
+}
+.metaphor-illustration picture { display: block; }
+.metaphor-visual {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
 
 /* Termo do glossário marcado no texto. */
 .glossary-term {

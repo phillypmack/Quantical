@@ -78,6 +78,11 @@ export const emaranhamento: Lesson[] = [
         kind: "metaphor",
         image:
           "É como preparar duas moedas idênticas, selar cada uma num envelope e mandar para lados opostos do mundo. Quando alguém abre, as duas mostram a mesma face — porque já eram iguais desde o começo. O emaranhamento seria isso, só que com qubits.",
+        ilustracao: {
+          src: "/images/metafora-envelopes-gemeos.png",
+          webp: "/images/metafora-envelopes-gemeos.webp",
+          alt: "Dois envelopes lacrados se afastam em sentidos opostos, cada um com o contorno de uma moeda dentro.",
+        },
         breaks:
           "Essa imagem explica a concordância, e é por isso que engana. O teste que a derruba é mudar a pergunta para os dois lados ao mesmo tempo: aplique uma Hadamard em cada qubit antes de medir. Se cada envelope carregasse um valor já decidido, essa troca destruiria a correlação e os quatro resultados apareceriam igualmente. Rode o circuito ao lado: continuam só |00⟩ e |11⟩. A concordância sobreviveu à troca de pergunta, e é isso que nenhum par de moedas consegue fazer.",
         circuit: bellComHH,

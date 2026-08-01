@@ -13,7 +13,7 @@ import {
   tracks,
 } from "@/data/curriculum";
 import { getLesson } from "@/data/lessons";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_NAME, SOCIAL_IMAGE } from "@/lib/site";
 
 type LessonPageProps = {
   params: Promise<{ track: string; module: string; lesson: string }>;
@@ -71,6 +71,7 @@ export async function generateMetadata({ params }: LessonPageProps): Promise<Met
       type: "article",
       siteName: SITE_NAME,
       locale: "pt_BR",
+      images: [SOCIAL_IMAGE],
     },
     other: track ? { "article:section": track.title } : undefined,
   };

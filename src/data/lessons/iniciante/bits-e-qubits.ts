@@ -78,6 +78,11 @@ export const bitsEQubits: Lesson[] = [
         kind: "metaphor",
         image:
           "Pense numa moeda girando no ar. Enquanto gira, não faz sentido perguntar se ela é cara ou coroa; só quando ela cai é que existe um resultado.",
+        ilustracao: {
+          src: "/images/metafora-moeda-girando.png",
+          webp: "/images/metafora-moeda-girando.webp",
+          alt: "Moeda violeta vista de lado girando acima de uma linha que representa uma mesa.",
+        },
         breaks:
           "Mas uma moeda girando não se desgira. Se aleatoriedade fosse a resposta, aplicar duas vezes a mesma porta que 'embaralha' o qubit deveria deixá-lo ainda mais embaralhado. Rode o circuito ao lado: duas portas H seguidas devolvem o qubit a |0⟩ com 100% de certeza. Ou seja, H não sorteia nada — H gira, e girar duas vezes volta ao começo.",
         circuit: doisH,

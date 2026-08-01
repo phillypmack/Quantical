@@ -106,6 +106,18 @@ describe("aulas escritas", () => {
     }
   });
 
+  it.each(authored)("%s: toda metáfora tem ilustração acessível e arquivos válidos", (_id, lesson) => {
+    for (const block of lesson.blocks) {
+      if (block.kind !== "metaphor") continue;
+
+      expect(block.ilustracao.alt.trim().length).toBeGreaterThan(20);
+      for (const arquivo of [block.ilustracao.src, block.ilustracao.webp]) {
+        const caminho = resolve("public", arquivo.replace(/^\/+/, ""));
+        expect(existsSync(caminho), caminho).toBe(true);
+      }
+    }
+  });
+
   it.each(authored)("%s: toda pergunta tem uma correta e explicação em todas", (_id, lesson) => {
     for (const question of lesson.quiz) {
       expect(question.options.filter((option) => option.correct)).toHaveLength(1);

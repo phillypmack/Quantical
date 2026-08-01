@@ -115,6 +115,11 @@ export const portas: Lesson[] = [
         kind: "metaphor",
         image:
           "Aplicar portas é como somar operações numa calculadora: o que importa é o conjunto, não a ordem. Girar um pouco para um lado e um pouco para o outro dá no mesmo, independentemente de qual veio primeiro.",
+        ilustracao: {
+          src: "/images/metafora-dois-botoes.png",
+          webp: "/images/metafora-dois-botoes.webp",
+          alt: "Duas mãos giram simultaneamente dois botões de painel idênticos.",
+        },
         breaks:
           "Pegue um livro. Gire um quarto de volta em torno do eixo vertical e depois um quarto em torno do horizontal. Agora recomece e faça na ordem inversa. O livro termina apontando para lugares diferentes — rotações no espaço não comutam, e isso vale igualmente para as rotações da esfera de Bloch. O circuito ao lado faz RY e depois RX, com uma Hadamard no fim para tornar a diferença visível na medição. Compare com a ordem trocada no experimento: um dá certeza absoluta, o outro dá cara ou coroa.",
         circuit: ryRxComH,
