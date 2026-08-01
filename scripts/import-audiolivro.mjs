@@ -10,6 +10,7 @@
 //
 // Uso: node scripts/import-audiolivro.mjs [dir-audio] [dir-roteiros]
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { join, resolve } from "node:path";
 
 const dirAudio = resolve(process.argv[2] ?? "../Dubla/work/livro/audio");
@@ -45,6 +46,10 @@ for (const arquivoRoteiro of roteiros) {
 
   const meta = JSON.parse(readFileSync(transcricao, "utf8"));
   const turnos = meta.turnos ?? [];
+  // O nginx mantém MP3s no cache do navegador por 30 dias. Como o nome do
+  // arquivo é estável enquanto um capítulo é corrigido, a URL precisa carregar
+  // uma versão derivada do conteúdo para nunca reproduzir a geração anterior.
+  const versao = createHash("sha256").update(readFileSync(mp3)).digest("hex").slice(0, 12);
 
   // `narrar()` pula fala que não produz pedaço nenhum. Se isso acontecer, o
   // índice do roteiro deixa de casar com o do turno e a página 7 apontaria
@@ -94,7 +99,7 @@ for (const arquivoRoteiro of roteiros) {
     numero,
     titulo: roteiro.titulo,
     resumo: roteiro.resumo,
-    src: `/audio/livro/${slug}.mp3`,
+    src: `/audio/livro/${slug}.mp3?v=${versao}`,
     duracao: meta.duracao,
     turnos: turnos.map((t) => ({ at: t.at, fim: t.fim, voz: t.voz, texto: t.texto })),
     paginas,

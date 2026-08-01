@@ -19,7 +19,7 @@ import { join, resolve } from "node:path";
 
 import { bookChapters, bookPages } from "../src/data/book";
 
-type Fala = { voz: string; texto: string };
+type Fala = { voz: string; texto: string; pausa?: number };
 type Roteiro = {
   id: string;
   titulo: string;
@@ -41,6 +41,17 @@ type Roteiro = {
 
 const NARRADORA = "nina";
 const CIENTISTA = "teo";
+
+const PAUSA = {
+  paragrafo: 0.6,
+  dialogo: 0.5,
+  pergunta: 0.8,
+  ultimaFrase: 0.9,
+  antesDaNota: 1.4,
+  depoisDaNota: 1.2,
+  pagina: 1.6,
+  depoisDoTitulo: 2.0,
+} as const;
 
 /**
  * O kicker traz um `·` como separador visual ("Capítulo 1 · A cidade que
@@ -86,32 +97,48 @@ function roteiroDoCapitulo(numero: number): Roteiro {
   const falas: Fala[] = [];
   const paginasNaFala: Record<string, number> = {};
 
+  function adicionar(voz: string, texto: string, pausa?: number) {
+    const anterior = falas.at(-1)?.texto.trimEnd();
+    const depoisDePergunta = anterior?.endsWith("?") ? PAUSA.pergunta : 0;
+    const pausaEfetiva = pausa === undefined ? undefined : Math.max(pausa, depoisDePergunta);
+    falas.push({ voz, texto, ...(pausaEfetiva === undefined ? {} : { pausa: pausaEfetiva }) });
+  }
+
   // Abertura: diz onde o ouvinte está. Num audiolivro não há número de página
   // para consultar, então o áudio precisa se situar sozinho.
-  falas.push({
-    voz: NARRADORA,
-    texto: juntar(`Capítulo ${numero}`, plano.title, plano.subtitle),
-  });
+  adicionar(NARRADORA, juntar(`Capítulo ${numero}`, plano.title, plano.subtitle));
 
-  for (const pagina of paginas) {
+  for (const [indiceDaPagina, pagina] of paginas.entries()) {
     // Marca onde esta página começa, ANTES de empilhar as falas dela.
     paginasNaFala[String(pagina.number)] = falas.length;
 
     // O título da seção substitui a virada de página. É curto e evocativo
     // ("A oficina do Sol"), então serve de marco sem virar burocracia.
-    falas.push({ voz: NARRADORA, texto: juntar(pagina.title, kickerFalado(pagina.kicker)) });
+    adicionar(
+      NARRADORA,
+      juntar(pagina.title, kickerFalado(pagina.kicker)),
+      indiceDaPagina === 0 ? PAUSA.depoisDoTitulo : Math.max(PAUSA.pagina, PAUSA.depoisDaNota),
+    );
 
-    for (const paragrafo of pagina.paragraphs) {
-      falas.push({ voz: NARRADORA, texto: paragrafo });
+    for (const [indiceDoParagrafo, paragrafo] of pagina.paragraphs.entries()) {
+      const dialogo = paragrafo.trimStart().startsWith("—");
+      const ultimo = indiceDoParagrafo === pagina.paragraphs.length - 1;
+      const pausa = ultimo
+        ? PAUSA.ultimaFrase
+        : dialogo
+          ? PAUSA.dialogo
+          : PAUSA.paragrafo;
+      adicionar(NARRADORA, paragrafo, pausa);
     }
 
     // A fórmula fica de fora de propósito: `u(ν,T) = (8πhν³/c³) / (e^(hν/kT) − 1)`
     // dita em voz alta é ruído, e o corpo da nota já explica a física em
     // prosa. Quem quiser a expressão a tem na página, que continua existindo.
-    falas.push({
-      voz: CIENTISTA,
-      texto: juntar("Nota científica", pagina.science.title, pagina.science.body),
-    });
+    adicionar(
+      CIENTISTA,
+      juntar("Nota científica", pagina.science.title, pagina.science.body),
+      PAUSA.antesDaNota,
+    );
   }
 
   return {

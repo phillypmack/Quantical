@@ -79,7 +79,7 @@ server {
     # em /audio/<slug> e precisam continuar vindo do site. Um location /audio/
     # comum engoliria as duas coisas e as páginas dariam 404.
     location ~ ^/audio/(?<episodio>[a-z0-9/-]+\.mp3)\$ {
-        # A classe não inclui ponto, então `..` não tem como aparecer e o
+        # A classe não inclui ponto, então ".." não tem como aparecer e o
         # alias não pode escapar do diretório. É o que permite o subnível de
         # /audio/livro/ sem abrir travessia de caminho.
         alias /var/www/quantical-audio/\$episodio;
