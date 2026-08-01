@@ -33,16 +33,19 @@ describe("arquitetura editorial do livro", () => {
 });
 
 describe("capítulos escritos", () => {
-  it("publica os três primeiros capítulos completos, página por página", () => {
+  it("publica a primeira parte completa, página por página", () => {
     expect(bookPages.filter((page) => page.chapter === 1)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 2)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPages.filter((page) => page.chapter === 3)).toHaveLength(PAGES_PER_CHAPTER);
+    expect(bookPages.filter((page) => page.chapter === 4)).toHaveLength(PAGES_PER_CHAPTER);
     expect(bookPageByNumber.get(1)?.title).toBe("A oficina do Sol");
     expect(bookPageByNumber.get(9)?.title).toBe("A menor assinatura");
     expect(bookPageByNumber.get(10)?.title).toBe("A chave violeta");
     expect(bookPageByNumber.get(18)?.title).toBe("A linha impossível de desver");
     expect(bookPageByNumber.get(19)?.title).toBe("O alvo que devolveu outra cor");
     expect(bookPageByNumber.get(27)?.title).toBe("Uma unidade completa de impacto");
+    expect(bookPageByNumber.get(28)?.title).toBe("A folha que quase não existia");
+    expect(bookPageByNumber.get(36)?.title).toBe("Um modelo brilhante e insuficiente");
   });
 
   it.each(bookPages.map((page) => [page.number, page] as const))(
