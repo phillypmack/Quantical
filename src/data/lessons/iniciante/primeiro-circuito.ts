@@ -106,8 +106,7 @@ export const primeiroCircuito: Lesson[] = [
         image:
           "O computador quântico é rápido porque testa as duas entradas ao mesmo tempo e depois lê as duas respostas de uma vez. Onde o clássico faz duas consultas em série, o quântico faz as duas em paralelo.",
         ilustracao: {
-          src: "/images/metafora-duas-leituras.png",
-          webp: "/images/metafora-duas-leituras.webp",
+          src: "/images/metafora-duas-leituras.webp",
           alt: "Pessoa sentada de pernas cruzadas segura dois livros abertos, um em cada mão.",
         },
         breaks:

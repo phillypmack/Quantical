@@ -79,8 +79,7 @@ export const emaranhamento: Lesson[] = [
         image:
           "É como preparar duas moedas idênticas, selar cada uma num envelope e mandar para lados opostos do mundo. Quando alguém abre, as duas mostram a mesma face — porque já eram iguais desde o começo. O emaranhamento seria isso, só que com qubits.",
         ilustracao: {
-          src: "/images/metafora-envelopes-gemeos.png",
-          webp: "/images/metafora-envelopes-gemeos.webp",
+          src: "/images/metafora-envelopes-gemeos.webp",
           alt: "Dois envelopes lacrados se afastam em sentidos opostos, cada um com o contorno de uma moeda dentro.",
         },
         breaks:

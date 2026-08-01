@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -111,10 +111,19 @@ describe("aulas escritas", () => {
       if (block.kind !== "metaphor") continue;
 
       expect(block.ilustracao.alt.trim().length).toBeGreaterThan(20);
-      for (const arquivo of [block.ilustracao.src, block.ilustracao.webp]) {
-        const caminho = resolve("public", arquivo.replace(/^\/+/, ""));
-        expect(existsSync(caminho), caminho).toBe(true);
-      }
+
+      const caminho = resolve("public", block.ilustracao.src.replace(/^\/+/, ""));
+      expect(existsSync(caminho), caminho).toBe(true);
+
+      // O formato é conferido pelos BYTES, não pela extensão. Quatro arquivos
+      // já chegaram nomeados .png sendo JPEG por dentro: o navegador farejava
+      // e exibia, mas o nginx anunciava image/png pelo nome — mentira que só
+      // aparece quando algum cache ou processador de imagem acredita nela.
+      const cabecalho = readFileSync(caminho).subarray(0, 12);
+      const ehWebp =
+        cabecalho.subarray(0, 4).toString() === "RIFF" &&
+        cabecalho.subarray(8, 12).toString() === "WEBP";
+      expect(ehWebp, `${caminho} não é WebP de verdade`).toBe(true);
     }
   });
 

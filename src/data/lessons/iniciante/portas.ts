@@ -116,8 +116,7 @@ export const portas: Lesson[] = [
         image:
           "Aplicar portas é como somar operações numa calculadora: o que importa é o conjunto, não a ordem. Girar um pouco para um lado e um pouco para o outro dá no mesmo, independentemente de qual veio primeiro.",
         ilustracao: {
-          src: "/images/metafora-dois-botoes.png",
-          webp: "/images/metafora-dois-botoes.webp",
+          src: "/images/metafora-dois-botoes.webp",
           alt: "Duas mãos giram simultaneamente dois botões de painel idênticos.",
         },
         breaks:

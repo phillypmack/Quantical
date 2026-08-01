@@ -23,7 +23,16 @@ export type Block =
   | {
       kind: "metaphor";
       image: string;
-      ilustracao: { src: string; webp: string; alt: string };
+      /**
+       * A ilustração da metáfora. WebP e nada mais.
+       *
+       * Havia um PNG de fallback por ilustração — 4,2 MB de raster para 180 KB
+       * de WebP, o triplo do artefato do site inteiro, servidos a browsers que
+       * não existem mais. Sob `output: "export"` não há otimização automática
+       * de imagem: o que se põe aqui é literalmente o que o aluno baixa, e boa
+       * parte deles está em rede móvel.
+       */
+      ilustracao: { src: string; alt: string };
       breaks: string;
       circuit: Circuit;
       caption: string;

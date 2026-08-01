@@ -88,8 +88,7 @@ export const superposicao: Lesson[] = [
         image:
           "Superposição é meio a meio. Um qubit em superposição é aquele que tem cinquenta por cento de chance de dar cada resultado — é isso que a palavra quer dizer.",
         ilustracao: {
-          src: "/images/metafora-meio-a-meio.png",
-          webp: "/images/metafora-meio-a-meio.webp",
+          src: "/images/metafora-meio-a-meio.webp",
           alt: "Duas jarras idênticas, cheias até a metade, têm a superfície do líquido inclinada em sentidos opostos.",
         },
         breaks:

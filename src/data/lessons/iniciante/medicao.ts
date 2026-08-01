@@ -92,8 +92,7 @@ export const medicao: Lesson[] = [
         image:
           "Medir é ler o valor guardado. O qubit tem um estado, a medição revela esse estado, e pronto — como consultar uma variável.",
         ilustracao: {
-          src: "/images/metafora-envelope-lacrado.png",
-          webp: "/images/metafora-envelope-lacrado.webp",
+          src: "/images/metafora-envelope-lacrado.webp",
           alt: "Envelope azul-petróleo aberto, com o lacre rompido e uma ficha em branco saindo de dentro.",
         },
         breaks:

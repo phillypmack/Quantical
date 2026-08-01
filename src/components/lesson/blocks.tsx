@@ -153,18 +153,23 @@ function MetaphorBlock({ block }: { block: Extract<Block, { kind: "metaphor" }> 
         </span>
         <p>{block.image}</p>
         <figure className="metaphor-illustration">
-          <picture>
-            <source srcSet={block.ilustracao.webp} type="image/webp" />
-            <img
-              src={block.ilustracao.src}
-              alt={block.ilustracao.alt}
-              className="metaphor-visual"
-              decoding="async"
-              height={1024}
-              loading="lazy"
-              width={1536}
-            />
-          </picture>
+          {/* `width`/`height` reservam o espaço antes de a imagem chegar: sem
+              eles o texto abaixo pula quando ela carrega.
+
+              `<img>` e não `next/image`: sob `output: "export"` não existe
+              servidor de otimização, então o componente cairia em
+              `unoptimized` e entregaria exatamente esta mesma tag — só que
+              com JavaScript a mais no pacote. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={block.ilustracao.src}
+            alt={block.ilustracao.alt}
+            className="metaphor-visual"
+            decoding="async"
+            height={1024}
+            loading="lazy"
+            width={1536}
+          />
         </figure>
       </div>
       <div className="metaphor-break">

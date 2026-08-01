@@ -79,8 +79,7 @@ export const bitsEQubits: Lesson[] = [
         image:
           "Pense numa moeda girando no ar. Enquanto gira, não faz sentido perguntar se ela é cara ou coroa; só quando ela cai é que existe um resultado.",
         ilustracao: {
-          src: "/images/metafora-moeda-girando.png",
-          webp: "/images/metafora-moeda-girando.webp",
+          src: "/images/metafora-moeda-girando.webp",
           alt: "Moeda violeta vista de lado girando acima de uma linha que representa uma mesa.",
         },
         breaks:

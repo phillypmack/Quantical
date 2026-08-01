@@ -765,3 +765,66 @@ test("a notação não tem violações graves de acessibilidade", async ({ page 
   );
   expect(blocking, blocking.map((item) => item.id).join(", ")).toEqual([]);
 });
+
+/* ---------------------------------------------------------------------------
+   Ilustrações das metáforas
+--------------------------------------------------------------------------- */
+
+test("a ilustração da metáfora carrega de verdade e tem alt descritivo", async ({ page }) => {
+  await page.goto("/curso/iniciante/bits-e-qubits/teoria");
+
+  const figura = page.locator(".metaphor-illustration img");
+  await expect(figura).toBeVisible();
+  await expect(figura).toHaveAttribute("alt", /moeda/i);
+  await expect(figura).toHaveAttribute("loading", "lazy");
+
+  // `naturalWidth > 0` é a única prova de que o arquivo chegou e decodificou.
+  // Um src quebrado ainda renderiza o elemento e passaria num teste de
+  // visibilidade.
+  await expect
+    .poll(() => figura.evaluate((img: HTMLImageElement) => img.naturalWidth), { timeout: 10_000 })
+    .toBeGreaterThan(0);
+
+  // width/height declarados evitam o pulo de layout quando a imagem chega.
+  await expect(figura).toHaveAttribute("width", "1536");
+  await expect(figura).toHaveAttribute("height", "1024");
+});
+
+test("as seis metáforas da trilha têm ilustração que carrega", async ({ page }) => {
+  test.setTimeout(60_000);
+  const aulas = [
+    "bits-e-qubits",
+    "superposicao",
+    "medicao",
+    "portas",
+    "emaranhamento",
+    "primeiro-circuito",
+  ];
+
+  for (const modulo of aulas) {
+    await page.goto(`/curso/iniciante/${modulo}/teoria`);
+    const figura = page.locator(".metaphor-illustration img");
+    await expect(figura, modulo).toHaveCount(1);
+    await expect
+      .poll(() => figura.evaluate((img: HTMLImageElement) => img.naturalWidth), { timeout: 10_000 })
+      .toBeGreaterThan(0);
+  }
+});
+
+test("a imagem de compartilhamento está declarada e existe", async ({ page }) => {
+  // O site declarava summary_large_image sem imagem nenhuma: todo link
+  // compartilhado saía em branco.
+  await page.goto("/");
+  const og = page.locator('meta[property="og:image"]');
+  await expect(og).toHaveAttribute("content", /\/images\/og-quantical\.png$/);
+
+  const url = await og.getAttribute("content");
+  const resposta = await page.request.get(new URL(url!).pathname);
+  expect(resposta.status()).toBe(200);
+  expect(resposta.headers()["content-type"]).toContain("image/png");
+
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+    "content",
+    "summary_large_image",
+  );
+});
