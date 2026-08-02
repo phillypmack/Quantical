@@ -27,6 +27,14 @@ const roteiros = readdirSync(dirRoteiros)
   .filter((f) => /^livro-ch\d+\.json$/.test(f))
   .sort();
 
+// Contador de geração, mantido por tools/gerar_capitulo.py da Dubla. Serve
+// para quem ouve conseguir dizer "na 0.06 a pergunta soou certa" — sem ele,
+// duas gerações diferentes são indistinguíveis de ouvido.
+const arquivoVersoes = join(dirAudio, "versoes.json");
+const versoes = existsSync(arquivoVersoes)
+  ? JSON.parse(readFileSync(arquivoVersoes, "utf8"))
+  : {};
+
 const capitulos = [];
 const faltando = [];
 const problemas = [];
@@ -101,6 +109,7 @@ for (const arquivoRoteiro of roteiros) {
     resumo: roteiro.resumo,
     src: `/audio/livro/${slug}.mp3?v=${versao}`,
     duracao: meta.duracao,
+    geracao: versoes[slug] ? `0.${String(versoes[slug]).padStart(2, "0")}` : undefined,
     turnos: turnos.map((t) => ({ at: t.at, fim: t.fim, voz: t.voz, texto: t.texto })),
     paginas,
   });

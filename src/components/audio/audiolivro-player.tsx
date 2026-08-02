@@ -124,6 +124,14 @@ export function AudiolivroPlayer({
           <button className="audiolivro-velocidade" onClick={trocarVelocidade} type="button">
             <Gauge size={12} /> {velocidade}×
           </button>
+          {/* Discreto de propósito: serve para quem está avaliando a narração
+              dizer "na 0.06 a pergunta soou certa". Não é informação para o
+              leitor comum, então não compete com nada na tela. */}
+          {capitulo.geracao && (
+            <span className="audiolivro-geracao" title="Geração desta narração">
+              {capitulo.geracao}
+            </span>
+          )}
         </div>
       </div>
     </section>

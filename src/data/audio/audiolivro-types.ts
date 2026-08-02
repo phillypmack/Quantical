@@ -15,6 +15,14 @@ export type AudiolivroCapitulo = {
   /** Servido pelo nginx fora do bundle, como os episódios. */
   src: string;
   duracao: number;
+  /**
+   * Qual geração deste áudio está no ar, no formato 0.NN.
+   *
+   * Existe para a escuta ser endereçável: sem ela, "a pergunta melhorou" não
+   * diz em relação a quê. O contador é incrementado por quem GERA o áudio, na
+   * Dubla — número mantido à mão desatualiza e passa a mentir.
+   */
+  geracao?: string;
   turnos: AudioTurno[];
   /**
    * Número da página do livro -> segundo em que ela começa no áudio.
